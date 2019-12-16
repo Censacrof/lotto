@@ -61,11 +61,10 @@ int main(int argc, char *argv[])
         }
 
         char *client_name = sockaddr_to_string((struct sockaddr *) &client_addr);
-
-        printf(
+        /*printf(
             "Connessione da %s\n",
             client_name
-        );
+        );*/
 
         pid_t child_pid;
         if ((child_pid = fork()) == -1)
@@ -83,6 +82,7 @@ int main(int argc, char *argv[])
             // gestisco la connessione con il client
             handle_connection(client_sock, client_addr, client_addr_size, client_name);
 
+            // una volta gestita la connessione termino il processo
             exit(EXIT_SUCCESS);
         }
 
@@ -96,9 +96,22 @@ int main(int argc, char *argv[])
     exit(EXIT_SUCCESS);
 }
 
-
 void handle_connection(int client_sock, struct sockaddr_storage client_addr, socklen_t client_addr_size, char *client_name)
 {
-    while (1)
-        printf("%s\n", client_name);
+    pid_t pid = getpid();
+
+    char whoiam[70];
+    sprintf(whoiam, "%d:%s", pid, client_name);
+
+    printf("%s: connessione stabilita\n", whoiam);
+
+    while (1) 
+    {
+        char *msg = recv_msg(client_sock);
+        if (!msg)
+            die(whoiam);
+
+        printf("%s: %s\n", whoiam, msg);
+        free(msg);
+    }
 }
