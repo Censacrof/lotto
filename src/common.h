@@ -85,7 +85,7 @@ char *recv_msg(int sockfd)
         return NULL;
     
 
-    // ricevo il messaggio sotto forma di testo, non c'è bisogno di tener conto dell'endianness 
+    // ricevo il messaggio sotto forma di testo, non c'è bisogno di tenere conto dell'endianness 
     // perchè i caratteri sono rappresentati su un solo byte
     base = s;
     n = msg_len;
@@ -103,5 +103,42 @@ char *recv_msg(int sockfd)
     return s;
 }
 
+
+// invia un messaggio sul socket sockfd. restituisce 0 oppure -1 in caso di errori.
+// msg DEVE puntare ad una stringa NULL TERMINATED
+int send_msg(int sockfd, char *msg)
+{
+    // prima della trasmissione del messaggio vero e proprio invio 2 bytes
+    // contenenti la lunghezza di quest'ultimo
+    int len = strlen(msg);         // da non inviare
+    uint16_t msg_len = htons(len); // da inviare (endianness)
+    int n = 2;
+    void *base = (void *) &msg_len;
+    do 
+    {
+        int sent = send(sockfd, base, n, 0);
+        if (sent == -1)
+            return -1;
+        
+        n -= sent;
+        base += sent;
+    } while(n > 0);
+    
+    // invio il messaggio sotto forma di testo, non c'è bisogno di tenere conto dell'endianness 
+    // perchè i caratteri sono rappresentati su un solo byte
+    n = len;
+    base = msg;
+    do 
+    {
+        int sent = send(sockfd, base, n, 0);
+        if (sent == -1)
+            return -1;
+        
+        n -= sent;
+        base += sent;
+    } while(n > 0);
+    
+    return 0;
+}
 
 #endif
