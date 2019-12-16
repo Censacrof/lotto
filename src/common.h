@@ -55,8 +55,6 @@ char *sockaddr_to_string(struct sockaddr *sa)
     return s;
 }
 
-
-
 // riceve un messaggio dal socket sockfd e lo copia su una stringa null terminated 
 // allocata dinamicamente di dimensioni opportune.
 // restituisce il puntatore alla stringa o NULL in caso di errore.

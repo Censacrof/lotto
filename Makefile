@@ -33,7 +33,7 @@ $(BIN_DIR)/%.o: $(SRC_DIR)/%.c
 # per ogni test aggiungo una regola per compilarlo
 $(TEST_DIR)/bin/%: $(TEST_DIR)/%.c
 	@mkdir -p $(TEST_DIR)/bin
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) -pthread $(CFLAGS) $< -o $@
 
 .PHONY: clean	# clean non è un file
 clean:
