@@ -6,7 +6,7 @@
 #include <netdb.h>
 #include <string.h>
 
-#include "common.h"
+#include "../common.h"
 
 void handle_connection(int, struct sockaddr_storage, socklen_t, char *);
 
