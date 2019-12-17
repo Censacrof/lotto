@@ -57,9 +57,10 @@ char *sockaddr_to_string(struct sockaddr *sa)
 
 // riceve un messaggio dal socket sockfd e lo copia su una stringa null terminated 
 // allocata dinamicamente di dimensioni opportune.
-// restituisce il puntatore alla stringa o NULL in caso di errore.
-// RICORDARSI DI USARE free
-char *recv_msg(int sockfd)
+// restituisce la lunghezza del messaggio oppure -1 in caso di errore. 
+// restituisce 0 se la connessione è stata chiusa.
+// RICORDARSI DI USARE free.
+int recv_msg(int sockfd, char **s)
 {
     // prima della trasmissione del messaggio vero e proprio il peer manda 2 bytes
     // contenenti la lunghezza di quest'ultimo
@@ -70,35 +71,44 @@ char *recv_msg(int sockfd)
     {
         int read = recv(sockfd, base, n, 0);
         if (read == -1)
-            return NULL;
-        
+            return -1;
+        else if (read == 0)
+            return 0;
+
         n -= read;
         base += read;
     } while(n > 0);
     msg_len = ntohs(msg_len); // endianness
 
     // alloco un buffer in grado di contenere il messaggio (null terminated)
-    char *s = malloc(msg_len + 1);
-    if (!s)
-        return NULL;
-    
+    *s = (char *) malloc(msg_len + 1);
+    if (!*s)
+        return -1;
 
     // ricevo il messaggio sotto forma di testo, non c'è bisogno di tenere conto dell'endianness 
     // perchè i caratteri sono rappresentati su un solo byte
-    base = s;
+    base = *s;
     n = msg_len;
     do
     {
         int read = recv(sockfd, base, n, 0);
         if (read == -1)
-            return NULL;
-        
+        {
+            free(*s);
+            return -1;
+        }            
+        else if (read == 0)
+        {
+            free(*s);
+            return 0;
+        }
+
         n -= read;
         base += read;
     } while(n > 0);
-    s[msg_len + 1] = '\0'; // rendo la stringa null terminated
+    (*s)[msg_len + 1] = '\0'; // rendo la stringa null terminated
 
-    return s;
+    return msg_len;
 }
 
 

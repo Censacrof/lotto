@@ -93,11 +93,17 @@ void server()
     if ((client_sock = accept(server_sock, (struct sockaddr *) &client_addr, &client_addr_size)) == -1)
         die("server: impossibile accettare una connessione");
 
-    char *msg = recv_msg(client_sock);
-    if (!msg)
+    char *msg;
+    int msg_len = recv_msg(client_sock, &msg);
+    if (msg_len == -1)
         die("server: impossibile ricevere un messaggio");
-    printf("server: ricevuto -> %s (len = %ld)\n", msg, strlen(msg));
-    free(msg);
+    else if (msg_len == 0)
+        printf("il client si è disconnesso");
+    else
+    {
+        printf("server: ricevuto -> %s (len = %ld)\n", msg, strlen(msg));
+        free(msg);
+    }
 
     close(client_sock);
 

@@ -105,11 +105,17 @@ void handle_connection(int client_sock, struct sockaddr_storage client_addr, soc
 
     printf("%s: connessione stabilita\n", whoiam);
 
-    while (1) 
+    while (1)
     {
-        char *msg = recv_msg(client_sock);
-        if (!msg)
+        char *msg; 
+        int len;
+        if ((len = recv_msg(client_sock, &msg)) == -1)
             die(whoiam);
+        if (len == 0)
+        {
+            printf("%s: connessione chiusa\n", whoiam);
+            exit(0);
+        }
 
         printf("%s: %s\n", whoiam, msg);
         free(msg);
