@@ -47,3 +47,9 @@ test: $(BIN_TEST)
 $(BIN_DIR)/test/msg: $(LIB_COMMON) test/msg.c
 	@mkdir -p $(BIN_DIR)/test
 	$(CC) $(CFLAGS) -pthread $^ -o $@
+
+
+# semplice client per testare il server (simile a netcat)
+$(BIN_DIR)/test/trivial_client: $(LIB_COMMON) test/trivial_client.c
+	@mkdir -p $(BIN_DIR)/test
+	$(CC) $(CFLAGS) $^ -o $@
