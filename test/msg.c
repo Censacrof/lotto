@@ -98,7 +98,7 @@ void server()
     if (msg_len == -1)
         die("server: impossibile ricevere un messaggio");
     else if (msg_len == 0)
-        printf("il client si è disconnesso");
+        printf("server: il client si è disconnesso\n");
     else
     {
         printf("server: ricevuto -> %s (len = %ld)\n", msg, strlen(msg));
@@ -139,10 +139,13 @@ void client()
         die("client: impossibile connettere il socket");
 
     char msg[] = "Hello world!";
-    if (send_msg(sockfd, msg) == -1)
-        die("client: mpossibile inviare un messaggio");
-
-    printf("client: inviato -> %s (len = %ld)\n", msg, strlen(msg));
+    int sent = send_msg(sockfd, msg);
+    if (sent == -1)
+        die("client: impossibile inviare un messaggio");
+    else if (sent == 0)
+        printf("client: il server si è disconnesso\n");
+    else
+        printf("client: inviato -> %s (len = %d)\n", msg, sent);
 
     close(sockfd);
     freeaddrinfo(server_addr_info);

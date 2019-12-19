@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <string.h>
+#include <errno.h>
 
 #include "common.h"
 
@@ -110,13 +111,23 @@ int recv_msg(int sockfd, char **s)
 }
 
 
-// invia un messaggio sul socket sockfd. restituisce 0 oppure -1 in caso di errori.
+// invia un messaggio sul socket sockfd. restituisce la lunghezza del messaggio oppure -1 in caso di errori.
+// restituisce 0 se la connessione è stata chiusa.
 // msg DEVE puntare ad una stringa NULL TERMINATED
 int send_msg(int sockfd, char *msg)
 {
     // prima della trasmissione del messaggio vero e proprio invio 2 bytes
     // contenenti la lunghezza di quest'ultimo
     int len = strlen(msg);         // da non inviare
+
+    // vieto l'invio di messaggi vuoti
+    if (len == 0)
+    {
+        errno = EPERM; // operation not permitted
+        return -1;
+    }
+        
+
     uint16_t msg_len = htons(len); // da inviare (endianness)
     int n = 2;
     void *base = (void *) &msg_len;
@@ -125,6 +136,8 @@ int send_msg(int sockfd, char *msg)
         int sent = send(sockfd, base, n, 0);
         if (sent == -1)
             return -1;
+        else if (sent == 0)
+            return 0;
         
         n -= sent;
         base += sent;
@@ -139,10 +152,12 @@ int send_msg(int sockfd, char *msg)
         int sent = send(sockfd, base, n, 0);
         if (sent == -1)
             return -1;
+        else if (sent == 0)
+            return 0;
         
         n -= sent;
         base += sent;
     } while(n > 0);
     
-    return 0;
+    return len;
 }

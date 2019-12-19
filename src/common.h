@@ -1,6 +1,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <sys/socket.h>
+
 #define DEFAULT_SERVER_PORT "1234"
 
 void die(const char *msg);
