@@ -7,8 +7,9 @@
 #include <string.h>
 
 #include "../common.h"
+#include "commands.h"
 
-void handle_connection(int, struct sockaddr_storage, socklen_t, char *);
+void handle_connection(int, char *);
 
 
 int main(int argc, char *argv[])
@@ -61,10 +62,6 @@ int main(int argc, char *argv[])
         }
 
         char *client_name = sockaddr_to_string((struct sockaddr *) &client_addr);
-        /*printf(
-            "Connessione da %s\n",
-            client_name
-        );*/
 
         pid_t child_pid;
         if ((child_pid = fork()) == -1)
@@ -80,7 +77,7 @@ int main(int argc, char *argv[])
             freeaddrinfo(server_info);
 
             // gestisco la connessione con il client
-            handle_connection(client_sock, client_addr, client_addr_size, client_name);
+            handle_connection(client_sock, client_name);
 
             // una volta gestita la connessione termino il processo
             exit(EXIT_SUCCESS);
@@ -96,7 +93,7 @@ int main(int argc, char *argv[])
     exit(EXIT_SUCCESS);
 }
 
-void handle_connection(int client_sock, struct sockaddr_storage client_addr, socklen_t client_addr_size, char *client_name)
+void handle_connection(int client_sock, char *client_name)
 {
     pid_t pid = getpid();
 
@@ -116,8 +113,8 @@ void handle_connection(int client_sock, struct sockaddr_storage client_addr, soc
             printf("%s: connessione chiusa\n", whoiam);
             exit(0);
         }
-
-        printf("%s: %s\n", whoiam, msg);
+        
+        execute_command(client_sock, msg);
         free(msg);
     }
 }
