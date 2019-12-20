@@ -17,6 +17,7 @@ void die(const char *msg)
 
 // estrae indirizzo e porta dalla struttura sockaddr e lo converte in stringa null-terminated
 // bisogna ricordarsi di deallocare la stringa con free quando non serve più
+// restituisce NULL in caso di errore
 // es: 127.0.0.1:12345
 char *sockaddr_to_string(struct sockaddr *sa)
 {
@@ -25,33 +26,36 @@ char *sockaddr_to_string(struct sockaddr *sa)
     {
         case AF_INET:
             s = (char *) malloc(sizeof(char) * INET_ADDRSTRLEN + 7); // + 7 perchè: la porta massima è 65535, un carattere è ':', la stringa è null terminated
-            inet_ntop(
+            if (!inet_ntop(
                 AF_INET,
                 &(((struct sockaddr_in *) sa)->sin_addr),
                 s,
                 INET_ADDRSTRLEN
-            );
+            ))
+                return NULL;
 
-            sprintf(&s[strlen(s)], ":%d", ntohs(((struct sockaddr_in *) sa)->sin_port));
+            int port = ntohs(((struct sockaddr_in *) sa)->sin_port); // endianness
+            sprintf(&s[strlen(s)], ":%d", port);
             break;
     
         case AF_INET6:
             s = (char *) malloc(sizeof(char) * INET6_ADDRSTRLEN + 7); // + 7 perchè: la porta massima è 65535, un carattere è ':', la stringa è null terminated
-            inet_ntop(
+            if (!inet_ntop(
                 AF_INET6,
                 &(((struct sockaddr_in6 *) sa)->sin6_addr),
                 s,
                 INET6_ADDRSTRLEN
-            );
+            ))
+                return NULL;
 
-            sprintf(&s[strlen(s)], ":%d", ntohs(((struct sockaddr_in6 *) sa)->sin6_port));
+            int port = ntohs(((struct sockaddr_in6 *) sa)->sin6_port); // endianness
+            sprintf(&s[strlen(s)], ":%d", port);
             break;
 
         default:
-            break;       
+            errno = EINVAL; // invalid argument
+            return NULL;
     }
-
-    return s;
 }
 
 // riceve un messaggio dal socket sockfd e lo copia su una stringa null terminated 
