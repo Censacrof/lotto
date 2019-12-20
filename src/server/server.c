@@ -14,6 +14,9 @@ void handle_connection(int, char *);
 
 int main(int argc, char *argv[])
 {
+    pid_t root_pid = getpid();
+    printf("server avviato (pid: %d)\n", root_pid);
+
     int status;
 
     // creo struttura "hint" da usare con getaddrinfo
@@ -48,6 +51,12 @@ int main(int argc, char *argv[])
     // metto il socket in ascolto
     if (listen(server_sock, 10) == -1)
         die("impossibile mettere il socket in listening");
+    
+    char *listening_on = sockaddr_to_string((struct sockaddr *) server_info->ai_addr);
+    if (!listening_on)
+        die("errore durante sockaddr_to_string");
+    printf("server in ascolto su %s\n", listening_on);
+    free(listening_on);
 
     // ciclo di accettazione
     while (1)
