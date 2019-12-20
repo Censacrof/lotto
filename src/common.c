@@ -145,7 +145,10 @@ int send_msg(int sockfd, char *msg)
     void *base = (void *) &msg_len;
     do 
     {
-        int sent = send(sockfd, base, n, 0);
+        // l'opzione MSG_NOSIGNAL server per far si che non venga inviato il
+        // segnale SIGPIPE nel caso la connessione sia stata chiusa dall'altro host
+        // e che di default causerebbe la terminazione dell'applicazione
+        int sent = send(sockfd, base, n, MSG_NOSIGNAL);
         if (sent == -1)
             return -1;
         else if (sent == 0)
@@ -161,7 +164,10 @@ int send_msg(int sockfd, char *msg)
     base = msg;
     do 
     {
-        int sent = send(sockfd, base, n, 0);
+        // l'opzione MSG_NOSIGNAL server per far si che non venga inviato il
+        // segnale SIGPIPE nel caso la connessione sia stata chiusa dall'altro host
+        // e che di default causerebbe la terminazione dell'applicazione
+        int sent = send(sockfd, base, n, MSG_NOSIGNAL);
         if (sent == -1)
             return -1;
         else if (sent == 0)
