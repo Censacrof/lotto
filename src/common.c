@@ -25,6 +25,7 @@ char *sockaddr_to_string(struct sockaddr *sa)
     switch (sa->sa_family)
     {
         case AF_INET:
+        {
             s = (char *) malloc(sizeof(char) * INET_ADDRSTRLEN + 7); // + 7 perchè: la porta massima è 65535, un carattere è ':', la stringa è null terminated
             if (!inet_ntop(
                 AF_INET,
@@ -37,8 +38,10 @@ char *sockaddr_to_string(struct sockaddr *sa)
             int port = ntohs(((struct sockaddr_in *) sa)->sin_port); // endianness
             sprintf(&s[strlen(s)], ":%d", port);
             break;
+        }
     
         case AF_INET6:
+        {
             s = (char *) malloc(sizeof(char) * INET6_ADDRSTRLEN + 7); // + 7 perchè: la porta massima è 65535, un carattere è ':', la stringa è null terminated
             if (!inet_ntop(
                 AF_INET6,
@@ -51,11 +54,17 @@ char *sockaddr_to_string(struct sockaddr *sa)
             int port = ntohs(((struct sockaddr_in6 *) sa)->sin6_port); // endianness
             sprintf(&s[strlen(s)], ":%d", port);
             break;
+        }
 
         default:
+        {
             errno = EINVAL; // invalid argument
             return NULL;
+        }
     }
+
+    errno = EINVAL; // invalid argument
+    return NULL;
 }
 
 // riceve un messaggio dal socket sockfd e lo copia su una stringa null terminated 
