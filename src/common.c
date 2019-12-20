@@ -63,8 +63,7 @@ char *sockaddr_to_string(struct sockaddr *sa)
         }
     }
 
-    errno = EINVAL; // invalid argument
-    return NULL;
+    return s;
 }
 
 // riceve un messaggio dal socket sockfd e lo copia su una stringa null terminated 
