@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <netdb.h>
 #include <string.h>
+#include <errno.h>
 
 #include "../src/common.h"
 
@@ -54,16 +55,16 @@ int main(int argc, char *argv[])
         int sent = send_msg(sockfd, req);
         free(req);
 
-        if (sent == -1) 
-        {
-            perror("impossibile inviare un messaggio");
-            continue;
-        }            
-        else if (sent == 0)
+        if (sent == 0 || (sent == -1 && errno == EPIPE))
         {
             printf("\nil server ha chiuso la connessione\n");
             break;
-        }            
+        }
+        else if (sent == -1) 
+        {
+            perror("impossibile inviare un messaggio");
+            continue;
+        }
         else
         {
             char *res;
