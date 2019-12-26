@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <string.h>
+#include <regex.h>
 #include <errno.h>
 
 #include "common.h"
@@ -178,4 +179,89 @@ int send_msg(int sockfd, char *msg)
     } while(n > 0);
     
     return len;
+}
+
+
+// compila regex, la esegue sulla string str e alloca l'array di stringhe *matches
+// contenente i match risultati. restituisce il numero di match.
+// ricordare di usare regex_match_free
+int regex_match(const char *regex_txt, const char *str, char **matches[])
+{
+    regex_t regex;
+    int status;
+    char error_buf[256]; // buffer per i messaggi di errore
+
+    // compilo l'espressione regolare
+    status = regcomp(
+        &regex,
+        regex_txt,
+        REG_EXTENDED // abilito la sintassi estesa
+    );
+
+    if (status != 0) // c'e' stato un errore
+    {
+        regerror(status, &regex, error_buf, sizeof(error_buf)); // copio il messaggio di errore in error_buf
+        printf("Impossibile compilare l'espressione regolare \"%s\": %s\n", regex_txt, error_buf);
+        exit(EXIT_FAILURE);
+    }
+
+    // eseguo la regex
+    const int max_matches = 20;
+    regmatch_t match_offsets[max_matches]; // man regexec
+    status = regexec(
+        &regex,
+        str,
+        max_matches,
+        match_offsets,
+        0
+    );
+
+    if (status == REG_NOMATCH) // nessun match
+    {
+        *matches = NULL;
+        return 0;
+    }
+    else if (status != 0) // c'e' stato un errore
+    {
+        regerror(status, &regex, error_buf, sizeof(error_buf)); // copio il messaggio di errore in error_buf
+        fprintf(stderr, "Regex match failed: %s\n", error_buf);
+        exit(EXIT_FAILURE);
+    }
+
+    // conto il numero di match
+    int nmatches;
+    for (nmatches = 0; nmatches < max_matches; nmatches++)
+        // se l'offset iniziale e' -1 allorra i match sono finiti ed esco dal ciclo
+        if (match_offsets[nmatches].rm_so == -1)
+            break;
+    
+    // alloco un array di stringhe
+    *matches = (char **) malloc(sizeof(char *) * nmatches);
+
+    // prendo ogni match e lo copio in una nuova stringa all'interno di matches
+    for (int i = 0; i < nmatches; i++)
+    {
+        char *mbase = (char *) &str[match_offsets[i].rm_so]; // indirizzo del match
+        int mlen = match_offsets[i].rm_eo - match_offsets[i].rm_so; // lunghezza del match
+        
+        // alloco un buffer e ci copio la stringa (null terminated)
+        (*matches)[i] = (char *) malloc(sizeof(char *) * (nmatches + 1));
+        strncpy((*matches)[i], mbase, mlen);
+        (*matches)[i][mlen] = '\0'; // rendo la stringa null terminated
+    }
+
+    // libero la memoria allocata
+    // TODO: implementare il caching delle regex compilate
+    regfree(&regex);
+
+    return nmatches;
+}
+
+// libera i buffer allocatin da regex_match puntati da *matches
+void regex_match_free(char **matches[], int nmatches)
+{
+    for (int i = 0; i < nmatches; i++)
+        free((*matches)[i]);
+    free(*matches);
+    *matches = NULL;
 }
