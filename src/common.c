@@ -195,7 +195,7 @@ int regex_match(const char *regex_txt, const char *str, char **matches[])
     status = regcomp(
         &regex,
         regex_txt,
-        REG_EXTENDED // abilito la sintassi estesa
+        REG_EXTENDED | REG_NEWLINE // abilito la sintassi estesa
     );
 
     if (status != 0) // c'e' stato un errore
