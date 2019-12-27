@@ -5,8 +5,8 @@ BIN_DIR=./bin
 TEST_DIR=./test
 
 SRC_COMMON:=$(wildcard $(SRC_DIR)/*.c)
-SRC_CLIENT:=$(SRC_COMMON) $(wildcard $(SRC_DIR)/client/*.c)
-SRC_SERVER:=$(SRC_COMMON) $(wildcard $(SRC_DIR)/server/*.c)
+SRC_CLIENT:=$(SRC_COMMON) $(wildcard $(SRC_DIR)/client/*.c) $(wildcard $(SRC_DIR)/client/**/*.c)
+SRC_SERVER:=$(SRC_COMMON) $(wildcard $(SRC_DIR)/server/*.c) $(wildcard $(SRC_DIR)/server/**/*.c)
 SRC_TEST:=$(wildcard $(TEST_DIR)/*.c)
 
 # sostituisco: src -> bin; .c -> .o; 
@@ -25,8 +25,7 @@ lotto-server: $(BIN_SERVER)
 
 # per ogni file .c contenuto in src/ aggiungo una ricetta per compilarlo
 $(BIN_DIR)/%.o: $(SRC_DIR)/%.c
-	@mkdir -p $(BIN_DIR)/client
-	@mkdir -p $(BIN_DIR)/server
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: clean	# clean non è un file
@@ -45,11 +44,17 @@ test: $(BIN_TEST)
 
 # testa le funzioni send_msg e recv_msg 
 $(BIN_DIR)/test/msg: $(LIB_COMMON) test/msg.c
-	@mkdir -p $(BIN_DIR)/test
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -pthread $^ -o $@
 
 
 # semplice client per testare il server (simile a netcat)
 $(BIN_DIR)/test/trivial_client: $(LIB_COMMON) test/trivial_client.c
-	@mkdir -p $(BIN_DIR)/test
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $^ -o $@
+
+
+# esperimenti con le regex
+$(BIN_DIR)/test/regex: $(LIB_COMMON) test/regex.c
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $^ -o $@
