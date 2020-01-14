@@ -17,10 +17,8 @@ int main(int argc, char *argv[])
         &matches
     );
 
-    if (nmatches == 0)
-    {
-        printf("nessun match\n");
-    }
+    printf("%d matches\n", nmatches);
+
     for (int i = 0; i < nmatches; i++)
     {
         printf("match %d: %s\n", i, matches[i]);
