@@ -32,6 +32,9 @@ $(BIN_DIR)/%.o: $(SRC_DIR)/%.c
 clean:
 	rm -rf *.o $(BIN_DIR) lotto-client lotto-server
 
+.PHONY: clean-data
+clean-data:
+	rm -rf data/
 
 # ----------------------------- TESTS -----------------------------
 # unità di compilazione che non contengono definizioni di main
@@ -56,5 +59,11 @@ $(BIN_DIR)/test/trivial_client: $(LIB_COMMON) test/trivial_client.c
 
 # esperimenti con le regex
 $(BIN_DIR)/test/regex: $(LIB_COMMON) test/regex.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $^ -o $@
+
+
+# testa la serializzazione
+$(BIN_DIR)/test/serialization: $(LIB_COMMON) test/serialization.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $^ -o $@
