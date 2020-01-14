@@ -9,6 +9,7 @@
 
 #include "common.h"
 
+char whoiam[70] = "";
 void die(const char *msg)
 {
     perror(msg);
@@ -182,7 +183,7 @@ int send_msg(int sockfd, char *msg)
 }
 
 
-// compila regex, la esegue sulla string str e alloca l'array di stringhe *matches
+// compila regex, la esegue sulla string str e se matches non è NULL alloca l'array di stringhe *matches
 // contenente i match risultati. restituisce il numero di match.
 // ricordare di usare regex_match_free
 int regex_match(const char *regex_txt, const char *str, char **matches[])
@@ -235,19 +236,22 @@ int regex_match(const char *regex_txt, const char *str, char **matches[])
         if (match_offsets[nmatches].rm_so == -1)
             break;
     
-    // alloco un array di stringhe
-    *matches = (char **) malloc(sizeof(char *) * nmatches);
-
-    // prendo ogni match e lo copio in una nuova stringa all'interno di matches
-    for (int i = 0; i < nmatches; i++)
+    if (matches)
     {
-        char *mbase = (char *) &str[match_offsets[i].rm_so]; // indirizzo del match
-        int mlen = match_offsets[i].rm_eo - match_offsets[i].rm_so; // lunghezza del match
-        
-        // alloco un buffer e ci copio la stringa (null terminated)
-        (*matches)[i] = (char *) malloc(sizeof(char *) * (nmatches + 1));
-        strncpy((*matches)[i], mbase, mlen);
-        (*matches)[i][mlen] = '\0'; // rendo la stringa null terminated
+        // alloco un array di stringhe
+        *matches = (char **) malloc(sizeof(char *) * nmatches);
+
+        // prendo ogni match e lo copio in una nuova stringa all'interno di matches
+        for (int i = 0; i < nmatches; i++)
+        {
+            char *mbase = (char *) &str[match_offsets[i].rm_so]; // indirizzo del match
+            int mlen = match_offsets[i].rm_eo - match_offsets[i].rm_so; // lunghezza del match
+            
+            // alloco un buffer e ci copio la stringa (null terminated)
+            (*matches)[i] = (char *) malloc(sizeof(char *) * (nmatches + 1));
+            strncpy((*matches)[i], mbase, mlen);
+            (*matches)[i][mlen] = '\0'; // rendo la stringa null terminated
+        }
     }
 
     // libero la memoria allocata

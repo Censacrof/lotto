@@ -106,7 +106,6 @@ void handle_connection(int client_sock, char *client_name)
 {
     pid_t pid = getpid();
 
-    char whoiam[70];
     sprintf(whoiam, "%d:%s", pid, client_name);
 
     printf("%s: connessione stabilita\n", whoiam);
