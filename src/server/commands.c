@@ -13,7 +13,7 @@ int execute_command(int client_sock, char *msg)
     // se il messaggio non produce match
     if ((nmatches = regex_match(S_MSGREGEX, msg, &matches)) == 0)
     {
-        send_msg(client_sock, "bad request");
+        send_response(client_sock, SRESP_BADREQ, "il formato della richiesta è errato");
         return 0;
     }
 
@@ -55,15 +55,30 @@ int execute_command(int client_sock, char *msg)
         token = strtok(NULL, delimiters);
     }
 
+    // // stampo il comando che il client sta tentando di eseguire
+    // char strbuff[50];
+    // int written = sprintf(strbuff, "!%s", command);
+    // for (int i = 0; i < nargs; i++)
+    //     written += sprintf(strbuff + written, " %s", args[i]);
+    // printf("%s\n", strbuff);
+
     // in base al comando eseguo la funzione ad esso associata
+    int ret;
     if (strcmp(command, "signup") == 0)
     {
-        signup(nargs, args);
+        ret = signup(client_sock, nargs, args);
     }
     else
     {
-        send_msg(client_sock, "comando sconosciuto");
+        send_response(client_sock, SRESP_BADREQ, "comando sconosciuto");
     }
+
+    // se c'è stato un errore lo segnalo al client
+    if (ret == -1)
+        send_response(client_sock, SRESP_ERR, "si è verificato un errore");
+    else
+        send_response(client_sock, SRESP_OK, "ok");
+    
 
     // libero le risorse che non servono piu'
     regex_match_free(&matches, nmatches);
@@ -77,3 +92,13 @@ int execute_command(int client_sock, char *msg)
 }
 
 
+int send_response(int client_sock, enum server_response code, char *info)
+{
+    char buff[128];
+    if (info)
+        sprintf(buff, "%d %s", code, info);
+    else 
+        sprintf(buff, "%d", code);
+    
+    return send_msg(client_sock, buff);
+}

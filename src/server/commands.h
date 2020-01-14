@@ -1,6 +1,8 @@
 #ifndef COMMANDS_H
 #define COMMANDS_H
 
+#include "../common.h"
+
 // espressione regolare (sintassi POSIX estesa) che definisce
 // la struttura dei messaggi ricevuti dal server (escluso i primi 2 bytes).
 // il primo carattere puo' essere N o S per distinguere i casi
@@ -17,7 +19,10 @@
 #define S_MSGS_ARGS 3
 
 int execute_command(int client_sock, char *msg);
-int signup(int argc, char *args[]);
+int send_response(int client_sock, enum server_response code, char *info);
+
+// comandi del server
+int signup(int client_sock, int argc, char *args[]);
 
 
 #endif
