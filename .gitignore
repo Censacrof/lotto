@@ -60,3 +60,4 @@ build/
 bin/
 lotto-client
 lotto-server
+data/
