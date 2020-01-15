@@ -14,8 +14,8 @@ void handle_connection(int, char *);
 
 int main(int argc, char *argv[])
 {
-    pid_t root_pid = getpid();
-    printf("server avviato (pid: %d)\n", root_pid);
+    sprintf(whoiam, "%d::", getpid());
+    consolelog("server avviato\n");
 
     int status;
 
@@ -55,7 +55,8 @@ int main(int argc, char *argv[])
     char *listening_on = sockaddr_to_string((struct sockaddr *) server_info->ai_addr);
     if (!listening_on)
         die("errore durante sockaddr_to_string");
-    printf("server in ascolto su %s\n", listening_on);
+
+    consolelog("server in ascolto su %s\n", listening_on);
     free(listening_on);
 
     // ciclo di accettazione
@@ -106,19 +107,22 @@ void handle_connection(int client_sock, char *client_name)
 {
     pid_t pid = getpid();
 
+    // inizializzo la variabile globale whoami
     sprintf(whoiam, "%d:%s", pid, client_name);
 
-    printf("%s: connessione stabilita\n", whoiam);
+    consolelog("connessione stabilita\n");
 
     while (1)
     {
+        last_msg_operation = MSGOP_NONE;
+
         char *msg; 
         int len;
         if ((len = recv_msg(client_sock, &msg)) == -1)
-            die(whoiam);
+            die("errore durante recv_msg");
         if (len == 0)
         {
-            printf("%s: connessione chiusa\n", whoiam);
+            consolelog("connessione chiusa\n");
             exit(0);
         }
         

@@ -24,8 +24,20 @@ enum server_response {
 
 extern char whoiam[70];
 void die(const char *msg);
+void consolelog(const char *format, ...);
 
 char *sockaddr_to_string(struct sockaddr *sa);
+
+
+enum msg_operation {
+    MSGOP_NONE,
+    MSGOP_RECV,
+    MSGOP_SEND
+};
+
+// variabile usata per garantire che le funzioni recv_msg e send_msg 
+// vengano chiamate in modo alternato (serve ad evitare bug)
+extern enum msg_operation last_msg_operation;
 
 int recv_msg(int sockfd, char **s);
 int send_msg(int sockfd, char *msg);
