@@ -61,13 +61,6 @@ int serializza_estrazione(FILE *stream, const estrazione_t *estrazione)
     return 0;
 }
 
-
-// percorsi
-#define PATH_DATA "data/"
-#define PATH_UTENTI PATH_DATA "utenti/"
-#define PATH_SCHEDINE_NUOVE PATH_DATA "schedine_nuove/"
-#define PATH_ESTRAZIONI PATH_DATA "estrazioni/"
-
 // crea le cartelle necessarie se non sono già presenti
 int inizializza_directories()
 {

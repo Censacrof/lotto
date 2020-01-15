@@ -25,10 +25,19 @@
             utenteN
 */
 
+// percorsi
+#define PATH_DATA "data/"
+#define PATH_UTENTI PATH_DATA "utenti/"
+#define PATH_SCHEDINE_NUOVE PATH_DATA "schedine_nuove/"
+#define PATH_ESTRAZIONI PATH_DATA "estrazioni/"
+
+// costanti
 #define N_DA_ESTRARRE 5
 #define N_DA_GIOCARE 10
 #define USERNAME_LEN 20
+#define USERNAME_REGEX "^[a-zA-Z0-9_]{3,20}$"
 #define PASSWORDHASH_LEN 64
+#define PASSWORD_REGEX "^[a-zA-Z0-9_]{3,20}$"
 #define SESSIONID_LEN 10
 
 // macro che restituisce 2^index. usata per generare maschere da usare con gli indici
@@ -112,8 +121,9 @@ int serializza_utente(FILE *stream, const utente_t *utente);
 int serializza_schedina(FILE *stream, const schedina_t *schedina);
 int serializza_estrazione(FILE *stream, const estrazione_t *estrazione);
 
+
+
 // funzioni di salvataggio dati
 int salva_utente(const utente_t *utente);
-
 
 #endif
