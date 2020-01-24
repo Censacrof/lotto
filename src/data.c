@@ -201,6 +201,22 @@ int serializza_estrazione(FILE *stream, const estrazione_t *estrazione)
     return 0;
 }
 
+int deserializza_estrazione(FILE *stream, estrazione_t *estrazione)
+{
+    long long int bigint;
+    deserializza_int(stream, &bigint);
+    estrazione->timestamp = bigint;
+
+    int i, j;
+    for (i = 0; i < N_RUOTE; i++)
+        for (j = 0; j < N_DA_ESTRARRE; j++)
+        {
+            deserializza_int(stream, &bigint);
+            estrazione->ruote[i][j] = bigint;
+        }
+    
+    return 0;
+}
 
 // ------------------------- utente ------------------------
 int serializza_utente(FILE *stream, const utente_t *utente)
