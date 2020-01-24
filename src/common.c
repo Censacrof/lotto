@@ -6,14 +6,28 @@
 #include <string.h>
 #include <regex.h>
 #include <errno.h>
+#include <stdarg.h>
 
 #include "common.h"
 
 char whoiam[70] = "";
 void die(const char *msg)
 {
-    perror(msg);
+    char buff[256];
+    sprintf(buff, "%s -> %s", whoiam, msg);
+    perror(buff);
     exit(EXIT_FAILURE);
+}
+
+void consolelog(const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+
+    printf("%s -> ", whoiam);
+    vprintf(format, args);
+
+    va_end(args);
 }
 
 
@@ -68,13 +82,28 @@ char *sockaddr_to_string(struct sockaddr *sa)
     return s;
 }
 
+
+// variabile usata per garantire che le funzioni recv_msg e send_msg 
+// vengano chiamate in modo alternato (serve ad evitare bug)
+enum msg_operation last_msg_operation;
+
+
 // riceve un messaggio dal socket sockfd e lo copia su una stringa null terminated 
 // allocata dinamicamente di dimensioni opportune.
 // restituisce la lunghezza del messaggio oppure -1 in caso di errore. 
 // restituisce 0 se la connessione è stata chiusa.
+// va usata in modo alternato con send_msg.
 // RICORDARSI DI USARE free.
 int recv_msg(int sockfd, char **s)
 {
+    if (last_msg_operation == MSGOP_RECV)
+    {
+        consolelog("ATTENZIONE: tentativo di usare recv_msg due volte consecutive senza chiamare send_msg nel mezzo");
+        return -1;
+    }
+
+    last_msg_operation = MSGOP_RECV;
+
     // prima della trasmissione del messaggio vero e proprio il peer manda 2 bytes
     // contenenti la lunghezza di quest'ultimo
     uint16_t msg_len;
@@ -128,8 +157,17 @@ int recv_msg(int sockfd, char **s)
 // invia un messaggio sul socket sockfd. restituisce la lunghezza del messaggio oppure -1 in caso di errori.
 // restituisce 0 se la connessione è stata chiusa.
 // msg DEVE puntare ad una stringa NULL TERMINATED
+// va usata in modo alternato con recv_msg.
 int send_msg(int sockfd, char *msg)
 {
+    if (last_msg_operation == MSGOP_SEND)
+    {
+        consolelog("ATTENZIONE: tentativo di usare send_msg due volte consecutive senza chiamare recv_msg nel mezzo\n");
+        return -1;
+    }
+
+    last_msg_operation = MSGOP_SEND;
+
     // prima della trasmissione del messaggio vero e proprio invio 2 bytes
     // contenenti la lunghezza di quest'ultimo
     int len = strlen(msg);         // da non inviare
@@ -219,7 +257,8 @@ int regex_match(const char *regex_txt, const char *str, char **matches[])
 
     if (status == REG_NOMATCH) // nessun match
     {
-        *matches = NULL;
+        if (matches)
+            *matches = NULL;
         return 0;
     }
     else if (status != 0) // c'e' stato un errore
