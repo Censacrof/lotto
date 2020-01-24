@@ -160,6 +160,28 @@ int serializza_schedina(FILE *stream, const schedina_t *schedina)
     return 0;
 }
 
+int deserializza_schedina(FILE *stream, schedina_t *schedina)
+{
+    long long int bigint;
+    int i;
+    for (i = 0; i < N_DA_GIOCARE; i++)
+    {
+        deserializza_int(stream, &bigint);
+        schedina->numeri[i] = bigint;
+    }        
+    
+    for (i = 0; i < N_TIPI_SCOMMESSE; i++)
+    {
+        deserializza_int(stream, &bigint);
+        schedina->importi_scommesse[i] = bigint;
+    }
+      
+    deserializza_int(stream, &bigint);
+    schedina->ruote_selezionate = bigint;
+
+    return 0;
+}
+
 
 // ----------------------- estrazione ----------------------
 int serializza_estrazione(FILE *stream, const estrazione_t *estrazione)
