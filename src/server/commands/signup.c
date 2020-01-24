@@ -1,7 +1,71 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <crypt.h>
+#include <unistd.h>
+#include <string.h>
+
 #include "../commands.h"
+#include "../../data.h"
 
-int signup(int nargs, char *args[])
+#define N_TENTATIVI 3
+
+// !signup username password
+int signup(int client_sock, int nargs, char *args[])
 {
+    if (nargs != 2)
+    {
+        if (send_response(client_sock, SRESP_BADREQ, "numero di parametri errato") == -1)
+            return -1;
 
+        return 0;
+    }
+
+    // controllo se l'username è gia utilizzato ed è valido (3 tentativi)
+    char filepath[128];
+    int i;
+    for (i = 0; i < N_TENTATIVI; i++)
+    {   
+        sprintf(filepath, "%s%s", PATH_UTENTI, args[0]);
+    
+        // se l'username è già utilizzato (esiste un file data/utenti/username)
+        // oppure non è valido
+        if (access(filepath, F_OK) != -1 || regex_match(USERNAME_REGEX, args[0], NULL) == 0)
+        {
+            if (i == N_TENTATIVI - 1)
+            {
+                if (send_response(client_sock, SRESP_BADREQ, "username già in uso/non valido e tentativi terminati") == -1)
+                    return -1;
+
+                return 0;
+            }
+
+            // dico al client di mandare un altro username
+            if (send_response(client_sock, SRESP_RETRY, "username già in uso/non valido") == -1)
+                return -1;
+            
+            // libero la stringa puntata da args[0]
+            free(args[0]);
+
+            // ricevo il nuovo username e lo copio in args[0]
+            int reti;
+            reti = recv_msg(client_sock, &args[0]);
+            if (reti == 0 || reti == -1) // se il client ha chiuso la connessione o c'è stato un errore
+                return reti;
+        }
+    }
+
+    // creo l'utente
+    utente_t utn;
+    strcpy(utn.username, args[0]);
+    strcpy(utn.passwordhash, args[1]);
+    utn.sessionid[0] = '\0'; // stringa vuota
+    utn.n_giocate = 0;
+    utn.giocate = NULL;
+
+    // salvo l'utente
+    if (salva_utente(&utn) == -1)
+        return -1;
+
+    send_response(client_sock, SRESP_OK, "utente creato con successo");
     return 0;
 }
