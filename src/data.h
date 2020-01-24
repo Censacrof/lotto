@@ -77,7 +77,7 @@ typedef struct utente utente_t;
 
 struct estrazione {
     // timestamp corrispondente all'istante dell'estrazione
-    long int timestamp;
+    time_t timestamp;
 
     // per ogni ruota i numeri estratti corrispondenti
     int ruote[N_RUOTE][N_DA_ESTRARRE];
