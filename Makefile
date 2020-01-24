@@ -15,6 +15,7 @@ BIN_CLIENT:=$(patsubst $(SRC_DIR)/%, $(BIN_DIR)/%, $(SRC_CLIENT:.c=.o))
 BIN_SERVER:=$(patsubst $(SRC_DIR)/%, $(BIN_DIR)/%, $(SRC_SERVER:.c=.o))
 BIN_TEST:=$(patsubst $(TEST_DIR)/%, $(BIN_DIR)/test/%, $(SRC_TEST:.c=))
 
+.PHONY: all	# all non è un file
 all: lotto-client lotto-server
 
 lotto-client: $(BIN_CLIENT)
@@ -28,7 +29,7 @@ $(BIN_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-.PHONY: clean	# clean non è un file
+.PHONY: clean # clean non è un file
 clean:
 	rm -rf *.o $(BIN_DIR) lotto-client lotto-server
 
