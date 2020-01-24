@@ -6,21 +6,39 @@
 #include <errno.h>
 #include <fcntl.h>
 
+
+int serializza_int(FILE *stream, const long long i, int usespace)
+{ 
+    char sep = usespace ? ' ' : '\n';
+    fprintf(stream, "%lld%c", i, sep);
+    return 0;
+}
+
+int serializza_str(FILE *stream, const char *s, int usespace)
+{
+    char sep = usespace ? ' ' : '\n';
+
+    // le stringhe vuote vengono serializzate tramite la sequenza di caratteri \0
+    if (s[0] == '\0')
+        fprintf(stream, "\\0%c", sep);
+    else
+        fprintf(stream, "%s%c", s, sep);
+    
+    return 0;
+}
+
 int serializza_utente(FILE *stream, const utente_t *utente)
 {
-    fprintf(stream, "%s\n%s\n%s\n%d\n",
-        utente->username,
-        utente->passwordhash,
-        utente->sessionid,
-        utente->n_giocate
-    );
+    serializza_str(stream, utente->username, 0);
+    serializza_str(stream, utente->passwordhash, 0);
+    serializza_str(stream, utente->sessionid, 0);
+    serializza_int(stream, utente->n_giocate, 0);
 
-    for (int i = 0; i < utente->n_giocate; i++)
+    int i;
+    for (i = 0; i < utente->n_giocate; i++)
     {
-        fprintf(stream, "%d\n%d\n",
-            utente->giocate[i].vincita,
-            utente->giocate[i].attiva
-        );
+        serializza_int(stream,  utente->giocate[i].vincita, 0);
+        serializza_int(stream,  utente->giocate[i].attiva, 0);
 
         serializza_schedina(stream, &utente->giocate[i].schedina);
         serializza_estrazione(stream, &utente->giocate[i].estrazione);
@@ -32,15 +50,16 @@ int serializza_utente(FILE *stream, const utente_t *utente)
 
 int serializza_schedina(FILE *stream, const schedina_t *schedina)
 {
-    for (int i = 0; i < N_DA_GIOCARE; i++)
-        fprintf(stream, "%d ", schedina->numeri[i]);
+    int i;
+    for (i = 0; i < N_DA_GIOCARE; i++)
+        serializza_int(stream, schedina->numeri[i], 1);
     fprintf(stream, "\n");
 
-    for (int i = 0; i < N_TIPI_SCOMMESSE; i++)
-        fprintf(stream, "%d ", schedina->importi_scommesse[i]);
+    for (i = 0; i < N_TIPI_SCOMMESSE; i++)
+        serializza_int(stream, schedina->importi_scommesse[i], 1);
     fprintf(stream, "\n");
 
-    fprintf(stream, "%d\n", schedina->ruote_selezionate);
+    serializza_int(stream, schedina->ruote_selezionate, 0);
 
     return 0;
 }
@@ -48,12 +67,14 @@ int serializza_schedina(FILE *stream, const schedina_t *schedina)
 
 int serializza_estrazione(FILE *stream, const estrazione_t *estrazione)
 {
-    fprintf(stream, "%ld\n", estrazione->timestamp);
+    serializza_int(stream, estrazione->timestamp, 0);
 
-    for (int i = 0; i < N_RUOTE; i++)
+    int i;
+    for (i = 0; i < N_RUOTE; i++)
     {
-        for (int j = 0; j < N_DA_ESTRARRE; j++)
-            fprintf(stream, "%d ", estrazione->ruote[i][j]);
+        int j;
+        for (j = 0; j < N_DA_ESTRARRE; j++)
+            serializza_int(stream, estrazione->ruote[i][j], 1);
         
         fprintf(stream, "\n");
     }     
