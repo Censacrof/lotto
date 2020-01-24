@@ -1,5 +1,9 @@
 #include "data.h"
+#include "common.h"
 
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/file.h>
@@ -30,6 +34,43 @@ int inizializza_directories()
     return 0;
 }
 
+// preleva un token (separato da \n, '\r', '\t', ' ') dallo stream e lo alloca dinamicamente in *tok
+// restituisce la lunghezza del token oppure -1 in caso di errore. ricordarsi di usare free.
+int streamgettoken(FILE *stream, char **tok)
+{
+    if (!tok)
+    {
+        errno = EINVAL; // invalid argument
+        return -1;
+    }
+
+    // alloco una stringa vuota
+    *tok = malloc(sizeof(char) * 1);
+    (*tok)[0] = '\0';
+    int toklen = 0;
+
+    // scorro lo stream finchè nono trovo un carattere che non sia un separatore
+    char c;
+    do {
+        c = fgetc(stream);
+    } while((c == '\n' || c == '\r' || c == '\t' || c == ' ') && c != EOF);
+    
+    do {
+        // se lo stream è terminato esco
+        if (c == EOF)
+            return toklen;
+
+        (*tok)[toklen] = c; // scrivo il carattere nella stringa
+        toklen++;
+        *tok = realloc(*tok, sizeof(char) * (toklen + 1)); // alloco un byte in più per '\0'
+        (*tok)[toklen] = '\0'; // rendo la stringa null terminated
+
+        c = fgetc(stream);
+    } while(c != '\n' && c != '\r' && c != '\t' && c != ' ');
+
+    return toklen;
+}
+
 
 // -------------------------- int --------------------------
 int serializza_int(FILE *stream, long long int i, int usespace)
@@ -39,6 +80,27 @@ int serializza_int(FILE *stream, long long int i, int usespace)
     return 0;
 }
 
+int deserializza_int(FILE *stream, long long int *i)
+{
+    char *tok;
+    if (streamgettoken(stream, &tok) == -1)
+        goto error;
+
+    if (regex_match("^[+-]{0,1}[0-9]{1,}$", tok, NULL) == 0)
+    {
+        free(tok);
+        goto error;
+    }        
+    
+    sscanf(tok, "%lld", i);
+    free(tok);
+    return 0;
+
+error:
+    consolelog("impossibile deserializzare un intero, assegno valore di default\n");
+    *i = 0;
+    return -1;
+}
 
 // -------------------------- str --------------------------
 int serializza_str(FILE *stream, const char *s, int usespace)
@@ -51,6 +113,32 @@ int serializza_str(FILE *stream, const char *s, int usespace)
     else
         fprintf(stream, "%s%c", s, sep);
     
+    return 0;
+}
+
+// ricordarsi di usare free
+int deserializza_str(FILE *stream, char **s)
+{
+    if (streamgettoken(stream, s) == -1)
+    {
+        consolelog("impossibile deserializzare una stringa, assegno valore di default\n");
+        if (s)
+        {
+            // in caso di errore imposto la stringa vuota
+            *s = malloc(sizeof(char) * 1);
+            (*s)[0] = '\0';
+        }
+        return -1;
+    }
+
+    // la sequenza di caratteri \0 indica una stringa vuota
+    if (strcmp(*s, "\\0") == 0)
+    {
+        free(*s);
+        *s = malloc(sizeof(char) * 1);
+        (*s)[0] = '\0';
+    }
+        
     return 0;
 }
 

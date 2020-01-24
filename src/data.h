@@ -117,11 +117,17 @@ struct utente {
 
 
 // funzioni di serializzazione e deserializzazione
+int serializza_int(FILE *stream, long long int i, int usespace);
+int serializza_str(FILE *stream, const char *s, int usespace);
 int serializza_utente(FILE *stream, const utente_t *utente);
 int serializza_schedina(FILE *stream, const schedina_t *schedina);
 int serializza_estrazione(FILE *stream, const estrazione_t *estrazione);
 
-
+int deserializza_int(FILE *stream, long long int *i);
+int deserializza_str(FILE *stream, char **s);
+int deserializza_utente(FILE *stream, utente_t *utente);
+int deserializza_schedina(FILE *stream, schedina_t *schedina);
+int deserializza_estrazione(FILE *stream, estrazione_t *estrazione);
 
 // funzioni di salvataggio dati
 int salva_utente(const utente_t *utente);
