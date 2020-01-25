@@ -239,6 +239,48 @@ int serializza_utente(FILE *stream, const utente_t *utente)
     return 0;
 }
 
+int deserializza_utente(FILE *stream, utente_t *utente)
+{
+    char *str;
+    deserializza_str(stream, &str);
+    strncpy(utente->username, str, USERNAME_LEN); 
+    utente->username[USERNAME_LEN] = '\0';
+    free(str);
+
+    deserializza_str(stream, &str);
+    strncpy(utente->passwordhash, str, PASSWORDHASH_LEN); 
+    utente->passwordhash[PASSWORDHASH_LEN] = '\0';
+    free(str);
+    
+    deserializza_str(stream, &str);
+    strncpy(utente->sessionid, str, SESSIONID_LEN); 
+    utente->sessionid[SESSIONID_LEN] = '\0';
+    free(str);
+
+    long long int bigint;
+    deserializza_int(stream, &bigint);
+    utente->n_giocate = bigint;
+
+    // calloc è come malloc ma riempie di zeri la memoria allocata
+    // (mi serve per poter confrontare le struture dati con memcmp)
+    utente->giocate = calloc(sizeof(*utente->giocate) * utente->n_giocate, 1);
+
+    int i;
+    for (i = 0; i < utente->n_giocate; i++)
+    {
+        deserializza_int(stream, &bigint);
+        utente->giocate[i].vincita = bigint;
+
+        deserializza_int(stream, &bigint);
+        utente->giocate[i].attiva = bigint;
+
+        deserializza_schedina(stream, &utente->giocate[i].schedina);
+        deserializza_estrazione(stream, &utente->giocate[i].estrazione);
+    }
+
+    return 0;
+}
+
 int salva_utente(const utente_t *utente)
 {
     // creo le cartelle necessarie se non sono già presenti
