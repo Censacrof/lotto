@@ -29,6 +29,8 @@ int main(int argc, char *argv[])
         client();
     else
         server();
+    
+    return 0;
 }
 
 void server()
