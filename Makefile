@@ -1,5 +1,7 @@
 CC=gcc
 CFLAGS=-Wall -g
+LINK_CLIENT=
+LINK_SERVER=-lcrypt
 SRC_DIR=./src
 BIN_DIR=./bin
 TEST_DIR=./test
@@ -19,10 +21,10 @@ BIN_TEST:=$(patsubst $(TEST_DIR)/%, $(BIN_DIR)/test/%, $(SRC_TEST:.c=))
 all: lotto-client lotto-server
 
 lotto-client: $(BIN_CLIENT)
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o $@ $(LINK_CLIENT)
 
 lotto-server: $(BIN_SERVER)
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o $@ $(LINK_SERVER)
 
 # per ogni file .c contenuto in src/ aggiungo una ricetta per compilarlo
 $(BIN_DIR)/%.o: $(SRC_DIR)/%.c
@@ -67,4 +69,4 @@ $(BIN_DIR)/test/regex: $(LIB_COMMON) test/regex.c
 # testa la serializzazione
 $(BIN_DIR)/test/serialization: $(LIB_COMMON) test/serialization.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o $@ $(LINK_SERVER)
