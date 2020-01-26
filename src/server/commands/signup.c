@@ -61,7 +61,8 @@ int signup(int client_sock, int nargs, char *args[])
     // dove: 
     //      - id serve a selezionare l'algoritmo di hashing (6 nel caso di sha512crypt)
     //      - randomstr è una stringa casuale di 16 caratteri utilizzata per perturbare
-    //        l'algoritmo rendendo difficile l'utilizzo di rainbow tables per invertire l'hash
+    //        l'algoritmo rendendo difficile l'utilizzo di rainbow tables per invertire
+    //        gli hash delle password più comunemente utilizzate
     char salt[PASSWORDSALT_LEN];
     char randomstr[17];
     randomstr[16] = '\0';
