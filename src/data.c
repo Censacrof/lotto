@@ -285,10 +285,10 @@ int deserializza_utente(FILE *stream, utente_t *utente)
 // retistuisce true se esiste un utente con questo username
 int utente_exists(const char *username)
 {
-    char filepath[128];
-    sprintf(filepath, "%s%s", PATH_UTENTI, username);
+    char filename[128];
+    sprintf(filename, "%s%s", PATH_UTENTI, username);
 
-    return access(filepath, F_OK) == 0;
+    return access(filename, F_OK) == 0;
 }
 
 int salva_utente(const utente_t *utente)
@@ -315,6 +315,40 @@ int salva_utente(const utente_t *utente)
         return -1;
 
     serializza_utente(stream, utente);
+
+    // rimuovo il lock
+    flock(fd, LOCK_UN);
+
+    // chiudo stream (al suo interno chiama anche close)
+    fclose(stream);
+
+    return 0;
+}
+
+
+int carica_utente(const char *username, utente_t *utente)
+{
+    char filename[128];
+    sprintf(filename, "%s%s", PATH_UTENTI, username);
+
+    // controllo che l'utente esista
+    if (!utente_exists(username))
+        return -1;
+
+    // apro il file
+    int fd = open(filename, O_RDONLY);
+    if (fd == -1)
+        return -1;
+    
+    // eseguo il lock condiviso sul file
+    flock(fd, LOCK_SH);
+
+    // associo uno stream al file descriptor
+    FILE *stream = fdopen(fd, "r");
+    if (!stream)
+        return -1;
+    
+    deserializza_utente(stream, utente);
 
     // rimuovo il lock
     flock(fd, LOCK_UN);

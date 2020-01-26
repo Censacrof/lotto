@@ -133,5 +133,6 @@ int deserializza_estrazione(FILE *stream, estrazione_t *estrazione);
 // funzioni di salvataggio/controllo dati non volatili
 int utente_exists(const char *username);
 int salva_utente(const utente_t *utente);
+int carica_utente(const char *username, utente_t *utente);
 
 #endif
