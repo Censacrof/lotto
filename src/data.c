@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/file.h>
@@ -279,6 +280,15 @@ int deserializza_utente(FILE *stream, utente_t *utente)
     }
 
     return 0;
+}
+
+// retistuisce true se esiste un utente con questo username
+int utente_exists(const char *username)
+{
+    char filepath[128];
+    sprintf(filepath, "%s%s", PATH_UTENTI, username);
+
+    return access(filepath, F_OK) == 0;
 }
 
 int salva_utente(const utente_t *utente)

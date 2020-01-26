@@ -23,15 +23,12 @@ int signup(int client_sock, int nargs, char *args[])
     for (char *c = args[0]; *c; c++) *c = *c >= 'A' && *c <= 'Z' ? *c + 32 : *c;
 
     // controllo se l'username è gia utilizzato ed è valido (3 tentativi)
-    char filepath[128];
     int i;
     for (i = 0; i < N_TENTATIVI; i++)
-    {   
-        sprintf(filepath, "%s%s", PATH_UTENTI, args[0]);
-    
+    {    
         // se l'username è già utilizzato (esiste un file data/utenti/username)
         // oppure non è valido
-        if (regex_match(USERNAME_REGEX, args[0], NULL) == 0 || access(filepath, F_OK) != -1)
+        if (regex_match(USERNAME_REGEX, args[0], NULL) == 0 || utente_exists(args[0]))
         {
             if (i == N_TENTATIVI - 1)
             {

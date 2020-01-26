@@ -130,7 +130,8 @@ int deserializza_utente(FILE *stream, utente_t *utente);
 int deserializza_schedina(FILE *stream, schedina_t *schedina);
 int deserializza_estrazione(FILE *stream, estrazione_t *estrazione);
 
-// funzioni di salvataggio dati
+// funzioni di salvataggio/controllo dati non volatili
+int utente_exists(const char *username);
 int salva_utente(const utente_t *utente);
 
 #endif
