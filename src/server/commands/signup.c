@@ -19,6 +19,9 @@ int signup(int client_sock, int nargs, char *args[])
         return 0;
     }
 
+    // l'username è case insensitive, quindi lo converto in lowercase per facilitare i confronti
+    for (char *c = args[0]; *c; c++) *c = *c >= 'A' && *c <= 'Z' ? *c + 32 : *c;
+
     // controllo se l'username è gia utilizzato ed è valido (3 tentativi)
     char filepath[128];
     int i;
