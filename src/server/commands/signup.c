@@ -81,7 +81,6 @@ int signup(int client_sock, int nargs, char *args[])
         consolelog("impossibile generare hash della password\n");
         return -1;
     }
-    consolelog("hash: %s\n", hash);
 
     // creo l'utente
     utente_t utn;
