@@ -59,7 +59,11 @@ int execute_command(int client_sock, char *msg)
     char strbuff[50];
     int written = sprintf(strbuff, "!%s", command);
     for (int i = 0; i < nargs; i++)
-        written += sprintf(strbuff + written, " %s", args[i]);
+        written += sprintf(
+            strbuff + written,
+            " %s",
+            ((!strcmp("signup", command) || !strcmp("login", command)) && i == 1) ? "*******" : args[i]
+        );
     consolelog("comando ricevuto: %s\n", strbuff);
 
     // in base al comando eseguo la funzione ad esso associata
@@ -68,14 +72,23 @@ int execute_command(int client_sock, char *msg)
     {
         ret = signup(client_sock, nargs, args);
     }
+    else if (strcmp(command, "login") == 0)
+    {
+        ret = login(client_sock, nargs, args);
+    }
     else
     {
         send_response(client_sock, SRESP_BADREQ, "comando sconosciuto");
     }
 
-    // se c'è stato un errore lo segnalo al client (se non è già stato segnalato dalle funzioni che lo hanno generato)
-    if (ret == -1 && last_msg_operation != MSGOP_SEND)
-        send_response(client_sock, SRESP_ERR, "si è verificato un errore");
+    // segnalo l'esito dell'operazione al client (se non è già stato segnalato dalle funzioni che l'hanno gestita)
+    if (last_msg_operation != MSGOP_SEND)
+    {
+        if (ret == 0)
+            send_response(client_sock, SRESP_OK, "ok");
+        else
+            send_response(client_sock, SRESP_ERR, "si è verificato un errore");
+    }
 
     // libero le risorse che non servono piu'
     regex_match_free(&matches, nmatches);
