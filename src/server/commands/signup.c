@@ -15,9 +15,7 @@ int signup(int client_sock, int nargs, char *args[])
 {
     if (nargs != 2)
     {
-        if (send_response(client_sock, SRESP_BADREQ, "numero di parametri errato") == -1)
-            return -1;
-
+        send_response(client_sock, SRESP_BADREQ, "numero di parametri errato");
         return 0;
     }
 
@@ -34,15 +32,12 @@ int signup(int client_sock, int nargs, char *args[])
         {
             if (i == N_TENTATIVI - 1)
             {
-                if (send_response(client_sock, SRESP_BADREQ, "username già in uso/non valido e tentativi terminati") == -1)
-                    return -1;
-
+                send_response(client_sock, SRESP_BADREQ, "username già in uso/non valido e tentativi terminati");
                 return 0;
             }
 
             // dico al client di mandare un altro username
-            if (send_response(client_sock, SRESP_RETRY, "username già in uso/non valido") == -1)
-                return -1;
+            send_response(client_sock, SRESP_RETRY, "username già in uso/non valido");
             
             // libero la stringa puntata da args[0]
             free(args[0]);

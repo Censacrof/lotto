@@ -109,8 +109,13 @@ int send_response(int client_sock, enum server_response code, char *info)
         sprintf(buff, "%d %s", code, info);
     else 
         sprintf(buff, "%d", code);
+    
+    if (send_msg(client_sock, buff) == -1)
+    {
+        consolelog("ERRORE INTERNO, impossibile iviare risposta: %s", buff);
+        return -1;
+    }
 
     consolelog("rispondo: %s\n", buff);
-    
-    return send_msg(client_sock, buff);
+    return 0;
 }
