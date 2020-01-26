@@ -30,7 +30,7 @@ int signup(int client_sock, int nargs, char *args[])
     
         // se l'username è già utilizzato (esiste un file data/utenti/username)
         // oppure non è valido
-        if (access(filepath, F_OK) != -1 || regex_match(USERNAME_REGEX, args[0], NULL) == 0)
+        if (regex_match(USERNAME_REGEX, args[0], NULL) == 0 || access(filepath, F_OK) != -1)
         {
             if (i == N_TENTATIVI - 1)
             {
