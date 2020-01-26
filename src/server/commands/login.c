@@ -64,6 +64,7 @@ int login(int client_sock, int nargs, char *args[])
     char charset[] = "abcdefghijklmnopqrstuvwxyz0123456789";
     for (int i = 0; i < SESSIONID_LEN; i++)
         utente.sessionid[i] = charset[rand() % sizeof(charset)];
+    utente.sessionid[SESSIONID_LEN] = '\0';
 
     // salvo l'utente (con il nuovo sessionid)
     salva_utente(&utente);
