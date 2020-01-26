@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <crypt.h>
 #include <unistd.h>
+#include <crypt.h>
 #include <string.h>
 
 #include "../commands.h"
@@ -54,10 +55,38 @@ int signup(int client_sock, int nargs, char *args[])
         }
     }
 
+    // genero l'hash della password inviata dall'utente utilizzando l'algoritmo sha512crypt
+    // (lo stesso usato per le password degli utenti nel file /etc/shadow)
+    // devo prima creare la stringa salt nel seguente formato: $id$randomstr$
+    // dove: 
+    //      - id serve a selezionare l'algoritmo di hashing (6 nel caso di sha512crypt)
+    //      - randomstr è una stringa casuale di 16 caratteri utilizzata per perturbare
+    //        l'algoritmo rendendo difficile l'utilizzo di rainbow tables per invertire l'hash
+    char salt[PASSWORDSALT_LEN];
+    char randomstr[17];
+    randomstr[16] = '\0';
+    for (i = 0; i < 16; i++)
+    {
+        const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ/.";
+        int n = rand() % sizeof(charset) - 1;
+        randomstr[i] = charset[n];
+    }
+    sprintf(salt, "$6$%s$", randomstr);
+
+    // calcolo l'hash
+    char *hash = crypt(args[1], salt);
+    if (!hash)
+    {
+        consolelog("impossibile generare hash della password\n");
+        return -1;
+    }
+    consolelog("hash: %s\n", hash);
+
     // creo l'utente
     utente_t utn;
     strcpy(utn.username, args[0]);
-    strcpy(utn.passwordhash, args[1]);
+    strcpy(utn.passwordhash, hash);
+    free(hash);
     utn.sessionid[0] = '\0'; // stringa vuota
     utn.n_giocate = 0;
     utn.giocate = NULL;

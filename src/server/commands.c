@@ -73,8 +73,8 @@ int execute_command(int client_sock, char *msg)
         send_response(client_sock, SRESP_BADREQ, "comando sconosciuto");
     }
 
-    // se c'è stato un errore lo segnalo al client
-    if (ret == -1)
+    // se c'è stato un errore lo segnalo al client (se non è già stato segnalato dalle funzioni che lo hanno generato)
+    if (ret == -1 && last_msg_operation != MSGOP_SEND)
         send_response(client_sock, SRESP_ERR, "si è verificato un errore");
 
     // libero le risorse che non servono piu'

@@ -36,7 +36,8 @@
 #define N_DA_GIOCARE 10
 #define USERNAME_LEN 20
 #define USERNAME_REGEX "^[a-zA-Z0-9_]{3,20}$"
-#define PASSWORDHASH_LEN 64
+#define PASSWORDSALT_LEN 21 // modalità + salt + separatori + null
+#define PASSWORDHASH_LEN 107 // modalità + salt + hash (sha512crypt) + separatori + null
 #define PASSWORD_REGEX "^[a-zA-Z0-9_]{3,20}$"
 #define SESSIONID_LEN 10
 
