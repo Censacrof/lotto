@@ -69,6 +69,7 @@ int login(int client_sock, int nargs, char *args[])
     // salvo l'utente (con il nuovo sessionid)
     salva_utente(&utente);
     
+    // invio il sessionid al client
     send_response(client_sock, SRESP_OK, utente.sessionid);
     return 0;
 }
