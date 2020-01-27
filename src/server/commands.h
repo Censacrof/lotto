@@ -18,7 +18,7 @@
 #define S_MSGS_COMMAND 2
 #define S_MSGS_ARGS 3
 
-int execute_command(int client_sock, char *msg);
+int execute_command(int client_sock, char *msg, const char *client_addr_str);
 int send_response(int client_sock, enum server_response code, char *info);
 
 // comandi del server

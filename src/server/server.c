@@ -122,7 +122,7 @@ void handle_connection(int client_sock, const struct sockaddr_in *client_addr)
             exit(0);
         }
         
-        execute_command(client_sock, msg);
+        execute_command(client_sock, msg, client_addr_str);
         free(msg);
     }
 }

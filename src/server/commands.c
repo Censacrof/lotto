@@ -5,7 +5,7 @@
 #include "commands.h"
 #include "../common.h"
 
-int execute_command(int client_sock, char *msg)
+int execute_command(int client_sock, char *msg, const char *client_addr_str)
 {
     char **matches;
     int nmatches;
