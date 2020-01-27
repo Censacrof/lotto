@@ -3,6 +3,7 @@
 
 #include <time.h>
 #include <stdio.h>
+#include <arpa/inet.h>
 
 /*  STRUTTURA DELLE DIRECTORY
     /data
@@ -40,6 +41,7 @@
 #define PASSWORDHASH_LEN 107 // modalità + salt + hash (sha512crypt) + separatori + null
 #define PASSWORD_REGEX "^[a-zA-Z0-9_]{3,20}$"
 #define SESSIONID_LEN 10
+#define SESSIONADDRESS_LEN INET6_ADDRSTRLEN
 
 // macro che restituisce 2^index. usata per generare maschere da usare con gli indici
 #define TOMASK(index) 1U << index
@@ -99,6 +101,7 @@ struct utente {
     char username[USERNAME_LEN + 1];
     char passwordhash[PASSWORDHASH_LEN + 1];
     char sessionid[SESSIONID_LEN + 1];
+    char sessionaddress[SESSIONADDRESS_LEN + 1];
 
     // dimesione numero di elementi dell'array giocate
     int n_giocate;

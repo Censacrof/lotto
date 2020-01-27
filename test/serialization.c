@@ -124,6 +124,7 @@ int main(int argc, char *argv[])
     strcpy(utente.username, "Osvaldo");
     strcpy(utente.passwordhash, "bAmBaGiA");
     strcpy(utente.sessionid, "a1b2c3d4e5");
+    strcpy(utente.sessionaddress, "192.168.1.140");
     utente.n_giocate = 5;
     utente.giocate = calloc(sizeof(*utente.giocate) * utente.n_giocate, 1);
     for (int i = 0; i < utente.n_giocate; i++)
