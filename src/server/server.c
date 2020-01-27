@@ -4,14 +4,14 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <time.h>
+#include <arpa/inet.h>
 #include <netdb.h>
 #include <string.h>
 
 #include "../common.h"
 #include "commands.h"
 
-void handle_connection(int, char *);
-
+void handle_connection(int, const struct sockaddr_in *);
 
 int main(int argc, char *argv[])
 {
@@ -21,24 +21,6 @@ int main(int argc, char *argv[])
     // intializzo il seed di random
     srand(time(NULL));
 
-    int status;
-
-    // creo struttura "hint" da usare con getaddrinfo
-    struct addrinfo hints;
-    memset(&hints, 0, sizeof(hints));   // azzero la struttura
-    hints.ai_family     = AF_INET;      // IPv4
-    hints.ai_socktype   = SOCK_STREAM;  // TCP
-    hints.ai_flags      = AI_PASSIVE;   // lascio che sia getaddrinfo inserire le informazioni
-
-    struct addrinfo *server_info = NULL;
-    if ((status = getaddrinfo(
-        NULL,                           // lascio che sia getaddrinfo inserire le informazioni
-        DEFAULT_SERVER_PORT,
-        &hints,        
-        &server_info
-    )) != 0)
-        die("errore durante getaddrinfo");
-
     // creo il socket
     int server_sock;
     if ((server_sock = socket(
@@ -47,35 +29,38 @@ int main(int argc, char *argv[])
         0
     )) == -1)
         die("impossibile creare un socket");
+    
+    int port;
+    sscanf(DEFAULT_SERVER_PORT, "%d", &port);
 
-    // faccio il bind del socket sulla porta specificata in server_info
-    if (bind(server_sock, server_info->ai_addr, server_info->ai_addrlen) == -1)
+    // creo l'indirizzo del server
+    struct sockaddr_in server_addr;
+    memset(&server_addr, 0, sizeof(struct sockaddr_in));
+    server_addr.sin_family      = AF_INET;
+    server_addr.sin_port        = htons(port);
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+
+    // faccio il bind del socket su porta e indirizzo specificati in server_addr
+    if (bind(server_sock, (struct sockaddr *) &server_addr, sizeof(server_addr)) == -1)
         die("impossibile fare il binding di un socket");
     
     // metto il socket in ascolto
     if (listen(server_sock, 10) == -1)
         die("impossibile mettere il socket in listening");
     
-    char *listening_on = sockaddr_to_string((struct sockaddr *) server_info->ai_addr);
-    if (!listening_on)
-        die("errore durante sockaddr_to_string");
-
-    consolelog("server in ascolto su %s\n", listening_on);
-    free(listening_on);
+    consolelog("server in ascolto sulla porta %d\n", port);
 
     // ciclo di accettazione
     while (1)
     {
         int client_sock;
-        struct sockaddr_storage client_addr;
+        struct sockaddr_in client_addr;
         socklen_t client_addr_size = sizeof(client_addr);
         if ((client_sock = accept(server_sock, (struct sockaddr *) &client_addr, &client_addr_size)) == -1) 
         {
             perror("impossibile accettare una connessione"); 
             continue;
         }
-
-        char *client_name = sockaddr_to_string((struct sockaddr *) &client_addr);
 
         pid_t child_pid;
         if ((child_pid = fork()) == -1)
@@ -88,10 +73,9 @@ int main(int argc, char *argv[])
             // PROCESSO FIGLIO
             // libero le risorse non utilizzate dal processo figlio
             close(server_sock);
-            freeaddrinfo(server_info);
 
             // gestisco la connessione con il client
-            handle_connection(client_sock, client_name);
+            handle_connection(client_sock, &client_addr);
 
             // una volta gestita la connessione termino il processo
             exit(EXIT_SUCCESS);
@@ -100,30 +84,38 @@ int main(int argc, char *argv[])
         // PROCESSO PADRE
         // libero le risorse non utilizzate dal processo padre
         close(client_sock);
-        free(client_name);
-    }    
+    }
 
-    freeaddrinfo(server_info);
     exit(EXIT_SUCCESS);
 }
 
-void handle_connection(int client_sock, char *client_name)
+void handle_connection(int client_sock, const struct sockaddr_in *client_addr)
 {
     pid_t pid = getpid();
+    
+    // converto l'indirizzo del client in stringa
+    char client_addr_str[INET_ADDRSTRLEN + 1];
+    client_addr_str[INET_ADDRSTRLEN] = '\0';
+    inet_ntop(AF_INET, client_addr, client_addr_str, INET_ADDRSTRLEN);
 
     // inizializzo la variabile globale whoami
-    sprintf(whoiam, "%d:%s", pid, client_name);
+    sprintf(whoiam, "%d:%s:%d", pid, client_addr_str, ntohs(client_addr->sin_port));
 
     consolelog("connessione stabilita\n");
 
+    // main loop
     while (1)
     {
+        // resetto lo stato delle funzioni send_msg e recv_msg
         last_msg_operation = MSGOP_NONE;
 
+        // ricevo un messaggio
         char *msg; 
         int len;
         if ((len = recv_msg(client_sock, &msg)) == -1)
             die("errore durante recv_msg");
+
+        // controllo se il client ha chiuso la connessione
         if (len == 0)
         {
             consolelog("connessione chiusa\n");
