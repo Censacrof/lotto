@@ -132,4 +132,7 @@ int utente_exists(const char *username);
 int salva_utente(const utente_t *utente);
 int carica_utente(const char *username, utente_t *utente);
 
+int blacklist(const char *ip);
+int is_blacklisted(const char *ip, time_t *timeleft);
+
 #endif

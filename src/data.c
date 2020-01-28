@@ -348,3 +348,19 @@ int carica_utente(const char *username, utente_t *utente)
 
     return 0;
 }
+
+
+// ------------------------- utente ------------------------
+int blacklist(const char *ip)
+{
+    // apro il file blacklist in modalità append (viene creato se non esiste)
+    FILE *f = fopen(PATH_BLACKLIST, "a+");
+
+    //scrivo ip e timestamp attuale
+    fprintf(f, "%s %d\n", ip, time(NULL));
+
+    // chiudo il file
+    fclose(f);
+
+    return 0;
+}
