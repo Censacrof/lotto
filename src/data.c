@@ -224,8 +224,6 @@ int serializza_utente(FILE *stream, const utente_t *utente)
 {
     serializza_str(stream, utente->username, 0);
     serializza_str(stream, utente->passwordhash, 0);
-    serializza_str(stream, utente->sessionid, 0);
-    serializza_str(stream, utente->sessionaddress, 0);
     serializza_int(stream, utente->n_giocate, 0);
 
     int i;
@@ -252,16 +250,6 @@ int deserializza_utente(FILE *stream, utente_t *utente)
     deserializza_str(stream, &str);
     strncpy(utente->passwordhash, str, PASSWORDHASH_LEN); 
     utente->passwordhash[PASSWORDHASH_LEN] = '\0';
-    free(str);
-    
-    deserializza_str(stream, &str);
-    strncpy(utente->sessionid, str, SESSIONID_LEN); 
-    utente->sessionid[SESSIONID_LEN] = '\0';
-    free(str);
-
-    deserializza_str(stream, &str);
-    strncpy(utente->sessionaddress, str, SESSIONADDRESS_LEN); 
-    utente->sessionaddress[SESSIONADDRESS_LEN] = '\0';
     free(str);
 
     long long int bigint;

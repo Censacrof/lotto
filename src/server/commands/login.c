@@ -63,13 +63,13 @@ int login(int client_sock, int nargs, char *args[])
     // genero sessionid (10 caratteri alphanumerici)
     char charset[] = "abcdefghijklmnopqrstuvwxyz0123456789";
     for (int i = 0; i < SESSIONID_LEN; i++)
-        utente.sessionid[i] = charset[rand() % sizeof(charset)];
-    utente.sessionid[SESSIONID_LEN] = '\0';
+        session.id[i] = charset[rand() % sizeof(charset)];
+    session.id[SESSIONID_LEN] = '\0';
 
     // salvo l'utente (con il nuovo sessionid)
     salva_utente(&utente);
     
     // invio il sessionid al client
-    send_response(client_sock, SRESP_OK, utente.sessionid);
+    send_response(client_sock, SRESP_OK, session.id);
     return 0;
 }

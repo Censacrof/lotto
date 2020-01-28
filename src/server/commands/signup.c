@@ -82,7 +82,6 @@ int signup(int client_sock, int nargs, char *args[])
     strcpy(utn.username, args[0]);
     strcpy(utn.passwordhash, hash);
     free(hash);
-    utn.sessionid[0] = '\0'; // stringa vuota
     utn.n_giocate = 0;
     utn.giocate = NULL;
 

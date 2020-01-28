@@ -5,6 +5,9 @@
 #include "commands.h"
 #include "../common.h"
 
+// inizializzo la variabile globale session
+struct session session = { "", "" };
+
 int execute_command(int client_sock, char *msg, const char *client_addr_str)
 {
     char **matches;

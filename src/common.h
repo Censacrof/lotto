@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 
 #define DEFAULT_SERVER_PORT "1234"
+#define SESSIONID_LEN 10
 
 enum server_response {
     // la richiesta è andata a buon fine

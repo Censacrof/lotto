@@ -82,7 +82,6 @@ void testutente(const utente_t *before)
     int different = 0;
     if (strcmp(before->username, after.username)) { different = 1; goto end; }
     if (strcmp(before->passwordhash, after.passwordhash)) { different = 1; goto end; }
-    if (strcmp(before->sessionid, after.sessionid)) { different = 1; goto end; }
     if (before->n_giocate != after.n_giocate) { different = 1; goto end; }
     if (memcmp(before->giocate, after.giocate, sizeof(*before->giocate) * before->n_giocate)) { different = 1; goto end; }
 
@@ -123,8 +122,6 @@ int main(int argc, char *argv[])
     memset(&utente, 0, sizeof(utente_t));
     strcpy(utente.username, "Osvaldo");
     strcpy(utente.passwordhash, "bAmBaGiA");
-    strcpy(utente.sessionid, "a1b2c3d4e5");
-    strcpy(utente.sessionaddress, "192.168.1.140");
     utente.n_giocate = 5;
     utente.giocate = calloc(sizeof(*utente.giocate) * utente.n_giocate, 1);
     for (int i = 0; i < utente.n_giocate; i++)
