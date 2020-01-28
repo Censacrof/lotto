@@ -9,7 +9,6 @@
 #include <sys/types.h>
 #include <sys/file.h>
 #include <errno.h>
-#include <fcntl.h>
 
 // crea le cartelle necessarie se non sono già presenti
 int inizializza_directories()
@@ -295,19 +294,12 @@ int salva_utente(const utente_t *utente)
     if (fd == -1)
         return fd;
 
-    // eseguo il lock esclusivo sul file
-    // (si usa il lock esclusivo quando si scrive e quello condiviso quando si legge)
-    flock(fd, LOCK_EX);
-
     // associo uno stream al file descriptor
     FILE *stream = fdopen(fd, "w");
     if (!stream)
         return -1;
 
     serializza_utente(stream, utente);
-
-    // rimuovo il lock
-    flock(fd, LOCK_UN);
 
     // chiudo stream (al suo interno chiama anche close)
     fclose(stream);
@@ -329,9 +321,6 @@ int carica_utente(const char *username, utente_t *utente)
     int fd = open(filename, O_RDONLY);
     if (fd == -1)
         return -1;
-    
-    // eseguo il lock condiviso sul file
-    flock(fd, LOCK_SH);
 
     // associo uno stream al file descriptor
     FILE *stream = fdopen(fd, "r");
@@ -339,9 +328,6 @@ int carica_utente(const char *username, utente_t *utente)
         return -1;
     
     deserializza_utente(stream, utente);
-
-    // rimuovo il lock
-    flock(fd, LOCK_UN);
 
     // chiudo stream (al suo interno chiama anche close)
     fclose(stream);
