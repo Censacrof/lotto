@@ -343,7 +343,7 @@ int blacklist(const char *ip)
     FILE *f = fopen(PATH_BLACKLIST, "a+");
 
     //scrivo ip e timestamp attuale
-    fprintf(f, "%s %d\n", ip, time(NULL));
+    fprintf(f, "%s %ld\n", ip, time(NULL));
 
     // chiudo il file
     fclose(f);
