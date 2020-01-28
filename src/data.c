@@ -24,10 +24,6 @@ int inizializza_directories()
         if (errno != EEXIST)
             return -1;
     
-    if (mkdir(PATH_SCHEDINE_NUOVE, mode) == -1)
-        if (errno != EEXIST)
-            return -1;
-    
     if (mkdir(PATH_ESTRAZIONI, mode) == -1)
         if (errno != EEXIST)
             return -1;

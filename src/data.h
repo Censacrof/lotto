@@ -7,12 +7,6 @@
 
 /*  STRUTTURA DELLE DIRECTORY
     /data
-        /schedine_nuove         -> contiene le schedine valide per la prossima estrazione
-            schdedina1
-            schdedina2
-            ...
-            schdedinaN
-
         /estrazioni             -> contiene le estrazioni passate
             estrazione1
             estrazione2
@@ -24,13 +18,17 @@
             utente2
             ...
             utenteN
+        
+        schedine_nuove          -> file di contenente le schedine che devono ancora venir processate
+        blacklist               -> file contenente ip e timestamp degli ip blacklistati
 */
 
 // percorsi
 #define PATH_DATA "data/"
-#define PATH_UTENTI PATH_DATA "utenti/"
-#define PATH_SCHEDINE_NUOVE PATH_DATA "schedine_nuove/"
 #define PATH_ESTRAZIONI PATH_DATA "estrazioni/"
+#define PATH_UTENTI PATH_DATA "utenti/"
+#define PATH_SCHEDINE_NUOVE PATH_DATA "schedine_nuove"
+#define PATH_BLACKLIST "blacklist"
 
 // costanti
 #define N_DA_ESTRARRE 5
