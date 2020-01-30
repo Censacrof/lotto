@@ -79,8 +79,12 @@ int serializza_int(FILE *stream, long long int i, int usespace)
 int deserializza_int(FILE *stream, long long int *i)
 {
     char *tok;
-    if (streamgettoken(stream, &tok) == -1)
+    int toklen;
+    if ((toklen = streamgettoken(stream, &tok)) == -1)
         goto error;
+
+    if (toklen == 0)
+        return 0;
 
     if (regex_match("^[+-]{0,1}[0-9]{1,}$", tok, NULL) == 0)
     {
@@ -90,7 +94,7 @@ int deserializza_int(FILE *stream, long long int *i)
     
     sscanf(tok, "%lld", i);
     free(tok);
-    return 0;
+    return toklen;
 
 error:
     consolelog("impossibile deserializzare un intero, assegno valore di default\n");
@@ -115,7 +119,8 @@ int serializza_str(FILE *stream, const char *s, int usespace)
 // ricordarsi di usare free
 int deserializza_str(FILE *stream, char **s)
 {
-    if (streamgettoken(stream, s) == -1)
+    int toklen;
+    if ((toklen = streamgettoken(stream, s)) == -1)
     {
         consolelog("impossibile deserializzare una stringa, assegno valore di default\n");
         if (s)
@@ -135,7 +140,7 @@ int deserializza_str(FILE *stream, char **s)
         (*s)[0] = '\0';
     }
         
-    return 0;
+    return toklen;
 }
 
 
