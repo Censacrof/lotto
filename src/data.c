@@ -341,9 +341,13 @@ int carica_utente(const char *username, utente_t *utente)
 }
 
 
-// ------------------------- utente ------------------------
+// ------------------------- blacklist ------------------------
+// aggiunge ip alla blacklist se non è già presente al suo interno
 int blacklist(const char *ip)
 {
+    // se l'ip è già nella blacklist evito di aggiungerlo
+    if (is_blacklisted(ip, NULL));
+
     // apro il file blacklist in modalità append (viene creato se non esiste)
     FILE *f = fopen(PATH_BLACKLIST, "a+");
 
@@ -354,4 +358,79 @@ int blacklist(const char *ip)
     fclose(f);
 
     return 0;
+}
+
+// restituisce 1 se l'ip è bannato 0 altrimenti. se timeleft non è NULL allora inserisce in *timeleft
+// il numero di secondi che mancano allo scadere del ban.
+// rimuove dalla blacklist tutti gli ip che non sono più bannati.
+int is_blacklisted(const char *ip, time_t *timeleft)
+{
+    // apro il file blacklist in modalità lettura e scrittura
+    FILE *f = fopen(PATH_BLACKLIST, "r");
+
+    // se il file non esiste l'ip non è nella blacklist
+    if (!f)
+        return 0;
+    
+    // inizializzo timeleft e il valore di ritorno (innocente fino a prova contraria)
+    if (timeleft)
+        timeleft = 0;
+    int retval = 0;
+
+    // array che contiene le entry della blacklist
+    int n_entries;
+    struct blacklist_entry {
+        char addr[INET_ADDRSTRLEN + 1];
+        time_t timestamp;
+    } *blacklist_entries = NULL;
+
+    // leggo la blacklist
+    while (1)
+    {
+        // alloco una nuova entry (estendo l'array)
+        blacklist_entries = realloc(blacklist_entries, sizeof(struct blacklist_entry) * (n_entries + 1));
+        struct blacklist_entry *entry = &blacklist_entries[n_entries];
+        
+        // leggo l'ip (esco se è finito lo stream o c'è stato un errore) e lo copio nella entry
+        char *s;
+        if (deserializza_str(f, &s) <= 0)
+            break;
+        strncpy(entry->addr, s, INET_ADDRSTRLEN + 1);
+        entry->addr[INET_ADDRSTRLEN] = '\0';
+
+        // leggo l'il timestamp (esco se è finito lo stream o c'è stato un errore) e lo copio nella entry
+        long long int bigint;
+        if (deserializza_int(f, &bigint) <= 0)
+            break;
+        entry->timestamp = bigint;
+
+        // tempo rimasto prima che scada il ban relativo a questa entry
+        time_t diff = BLACKLIST_TIMETOWAIT - (time(NULL) - entry->timestamp);
+
+        // se il ban non è scaduto incremento n_entries così questa entry non verrà sovrascritta alla prossima iterazione
+        if (diff > 0)
+            n_entries++;
+        
+        // se l'ip della entry corrisponde a quello passato alla funzione
+        if (strcmp(ip, entry->addr) == 0)
+        {
+            if (timeleft)
+                *timeleft = diff < 0 ? 0 : diff;
+            retval = diff < 0 ? 0 : 1;
+        }
+    }
+
+    // chiudo il file
+    fclose(f);
+
+    // riscrivo il file omettendo i ban terminati
+    f = fopen(PATH_BLACKLIST, "w");
+    for (int i = 0; i < n_entries; i++)
+    {
+        serializza_str(f, blacklist_entries[i].addr, 1);
+        serializza_int(f, blacklist_entries[i].timestamp, 0);
+    }
+    fclose(f);
+
+    return retval;
 }

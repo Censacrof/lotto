@@ -28,7 +28,7 @@
 #define PATH_ESTRAZIONI PATH_DATA "estrazioni/"
 #define PATH_UTENTI PATH_DATA "utenti/"
 #define PATH_SCHEDINE_NUOVE PATH_DATA "schedine_nuove"
-#define PATH_BLACKLIST "blacklist"
+#define PATH_BLACKLIST PATH_DATA "blacklist"
 
 // costanti
 #define N_DA_ESTRARRE 5
@@ -38,6 +38,7 @@
 #define PASSWORDSALT_LEN 21 // modalità + salt + separatori + null
 #define PASSWORDHASH_LEN 107 // modalità + salt + hash (sha512crypt) + separatori + null
 #define PASSWORD_REGEX "^[a-zA-Z0-9_]{3,20}$"
+#define BLACKLIST_TIMETOWAIT 60 * 30 // 30 minuti
 
 // macro che restituisce 2^index. usata per generare maschere da usare con gli indici
 #define TOMASK(index) 1U << index
