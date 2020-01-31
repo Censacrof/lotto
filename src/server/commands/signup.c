@@ -58,7 +58,7 @@ int signup(int client_sock, int nargs, char *args[])
     //      - randomstr è una stringa casuale di 16 caratteri utilizzata per perturbare
     //        l'algoritmo rendendo difficile l'utilizzo di rainbow tables per invertire
     //        gli hash delle password più comunemente utilizzate
-    char salt[PASSWORDSALT_LEN];
+    char salt[PASSWORDSALT_LEN + 1];
     char randomstr[17];
     randomstr[16] = '\0';
     for (i = 0; i < 16; i++)
@@ -81,7 +81,6 @@ int signup(int client_sock, int nargs, char *args[])
     utente_t utn;
     strcpy(utn.username, args[0]);
     strcpy(utn.passwordhash, hash);
-    free(hash);
     utn.n_giocate = 0;
     utn.giocate = NULL;
 

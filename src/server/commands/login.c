@@ -38,24 +38,19 @@ int login(int client_sock, const char *client_addr_str, int nargs, char *args[])
     if (carica_utente(args[0], &utente) == -1)
         return -1;
     
-    // estraggo il salt da username->password
-    char salt[PASSWORDSALT_LEN]; 
-    strncpy(salt, utente.passwordhash, PASSWORDSALT_LEN - 1);
-    salt[PASSWORDHASH_LEN - 1] = '\0';
+    // estraggo il salt da utente.password
+    char salt[PASSWORDSALT_LEN + 1];
+    strncpy(salt, utente.passwordhash, PASSWORDSALT_LEN);
+    salt[PASSWORDSALT_LEN] = '\0';
 
     // calcolo l'hash della password mandata dal client con il salt dell'utente
     char *newhash = crypt(args[1], salt);
 
     // confronto il nuovo hash con quello vecchio
     if (strcmp(newhash, utente.passwordhash) != 0)
-    {
-        // la password non è correttta
-        free(newhash);
         goto wrongcredentials;
-    }
 
     // la password è corretta
-    free(newhash);
     tries_left = N_LOGINTRIES;
 
     // genero sessionid (10 caratteri alphanumerici)
@@ -63,12 +58,12 @@ int login(int client_sock, const char *client_addr_str, int nargs, char *args[])
     int charsetlen = strlen(charset);
     for (int i = 0; i < SESSIONID_LEN; i++)
     {
-        current_session.id[i] = charset[rand() % (charsetlen + 1)];
+        session.id[i] = charset[rand() % (charsetlen + 1)];
     }
-    current_session.id[SESSIONID_LEN - 1] = '\0';
+    session.id[SESSIONID_LEN - 1] = '\0';
     
     // invio il sessionid al client
-    send_response(client_sock, SRESP_OK, current_session.id);
+    send_response(client_sock, SRESP_OK, session.id);
     return 0;
 
 wrongcredentials:

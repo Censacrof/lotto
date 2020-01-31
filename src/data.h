@@ -35,8 +35,8 @@
 #define N_DA_GIOCARE 10
 #define USERNAME_LEN 20
 #define USERNAME_REGEX "^[a-zA-Z0-9_]{3,20}$" // è importante limitare i caratteri utilizzabili per proteggerci da attacchi PATH INJECTION
-#define PASSWORDSALT_LEN 21 // modalità + salt + separatori + null
-#define PASSWORDHASH_LEN 107 // modalità + salt + hash (sha512crypt) + separatori + null
+#define PASSWORDSALT_LEN 20 // modalità + salt + separatori
+#define PASSWORDHASH_LEN 106 // modalità + salt + hash (sha512crypt) + separatori
 #define PASSWORD_REGEX "^[a-zA-Z0-9_]{3,20}$"
 #define BLACKLIST_TIMETOWAIT 60 * 30 // 30 minuti
 
