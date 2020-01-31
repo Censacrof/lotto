@@ -55,10 +55,9 @@ int login(int client_sock, const char *client_addr_str, int nargs, char *args[])
 
     // genero sessionid (10 caratteri alphanumerici)
     char charset[] = "abcdefghijklmnopqrstuvwxyz0123456789";
-    int charsetlen = strlen(charset);
     for (int i = 0; i < SESSIONID_LEN; i++)
     {
-        session.id[i] = charset[rand() % (charsetlen + 1)];
+        session.id[i] = charset[rand() % (sizeof(charset) - 1)];
     }
     session.id[SESSIONID_LEN] = '\0';
     

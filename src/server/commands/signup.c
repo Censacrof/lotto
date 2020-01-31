@@ -64,8 +64,7 @@ int signup(int client_sock, int nargs, char *args[])
     for (i = 0; i < 16; i++)
     {
         const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ/.";
-        int n = rand() % sizeof(charset) - 1;
-        randomstr[i] = charset[n];
+        randomstr[i] = charset[rand() % sizeof(charset - 1)];
     }
     sprintf(salt, "$6$%s$", randomstr);
 
