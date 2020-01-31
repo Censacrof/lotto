@@ -374,7 +374,7 @@ int is_blacklisted(const char *ip, time_t *timeleft)
     
     // inizializzo timeleft e il valore di ritorno (innocente fino a prova contraria)
     if (timeleft)
-        timeleft = 0;
+        *timeleft = 0;
     int retval = 0;
 
     // array che contiene le entry della blacklist
