@@ -76,7 +76,12 @@ int main(int argc, char *argv[])
         if (is_blacklisted(client_addr_str, &timeleft))
         {
             // segnalo al client che il suo indirizzo risulta in blacklist
-            send_response(client_sock, SRESP_ERR, "questo indirizzo risulta bannato a causa dei numerosi tentativi di login falliti. riprovare più tardi");
+            char buff_resp[256];
+            char buff_timeleft[16];
+            strftime(buff_timeleft, 16, "%H:%M:%S", gmtime(&timeleft));
+
+            sprintf(buff_resp, "questo indirizzo (%s) risulta bannato a causa dei numerosi tentativi di login falliti. riprovare tra %s", client_addr_str, buff_timeleft);
+            send_response(client_sock, SRESP_ERR, buff_resp);
 
             // chiudo la connessione e ricomincio il ciclo di accettazione
             close(client_sock);
