@@ -54,7 +54,7 @@ int login(int client_sock, const char *client_addr_str, int nargs, char *args[])
     tries_left = N_LOGINTRIES;
 
     // genero sessionid (10 caratteri alphanumerici)
-    char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    char charset[] = "abcdefghijklmnopqrstuvwxyz0123456789";
     int charsetlen = strlen(charset);
     for (int i = 0; i < SESSIONID_LEN; i++)
     {
