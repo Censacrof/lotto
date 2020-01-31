@@ -32,5 +32,6 @@ int send_response(int client_sock, enum server_response code, char *info);
 // comandi del server
 int signup(int client_sock, int argc, char *args[]);
 int login(int client_sock, const char *client_addr_str, int argc, char *args[]);
+int invia_giocata(int client_sock);
 
 #endif

@@ -22,7 +22,7 @@ int execute_command(int client_sock, char *msg, const char *client_addr_str)
     }
 
     // estraggo le seguenti informazioni dal messaggio
-    char *session_id = NULL;
+    char session_id[SESSIONID_LEN + 1] = "";
     char *command = NULL; int command_index;
     char **args = NULL; int args_index;
     int nargs = 0;
@@ -34,9 +34,9 @@ int execute_command(int client_sock, char *msg, const char *client_addr_str)
     } 
     else if (msg[0] == 'S') // messaggio con session id
     {
-        // alloco e copio la stringa contenente il session id
-        session_id = malloc(sizeof(char) * (strlen(matches[S_MSGS_SESSION_ID])));
-        strcpy(session_id, &matches[S_MSGS_SESSION_ID][1]); // evito di copiare il carattere S
+        // copio la stringa contenente il session id
+        strncpy(session_id, &matches[S_MSGS_SESSION_ID][1], SESSIONID_LEN); // evito di copiare il carattere S
+        session_id[SESSIONID_LEN] = '\0';
 
         command_index = S_MSGS_COMMAND;
         args_index = S_MSGS_ARGS;
@@ -74,6 +74,7 @@ int execute_command(int client_sock, char *msg, const char *client_addr_str)
     int ret = 0;
     
     // in base al comando eseguo la funzione ad esso associata
+    // comanindi che non richiedono un sessionid
     if (strcmp(command, "signup") == 0)
     {
         ret = signup(client_sock, nargs, args);
@@ -82,9 +83,29 @@ int execute_command(int client_sock, char *msg, const char *client_addr_str)
     {
         ret = login(client_sock, client_addr_str, nargs, args);
     }
+
+    // controllo il sessionid
+    else if (strcmp(session_id, session.id) != 0)
+    {
+        if (session_id[0] == '\0')
+            send_response(client_sock, SRESP_BADREQ, "è necessario fornire un sessionid");
+        else
+            send_response(client_sock, SRESP_BADREQ, "comando sconosciuto");
+        
+        ret = 0;
+    }
+
+    // comandi che richiedono un sessionid
+    else if (strcmp(command, "invia_giocata") == 0)
+    {
+        ret = invia_giocata(client_sock);
+    }
+
+    // comando sconosciuto
     else
     {
         send_response(client_sock, SRESP_BADREQ, "comando sconosciuto");
+        ret = 0;
     }
 
     // segnalo l'esito dell'operazione al client (se non è già stato segnalato dalle funzioni che l'hanno gestita)
@@ -98,7 +119,6 @@ int execute_command(int client_sock, char *msg, const char *client_addr_str)
 
     // libero le risorse che non servono piu'
     regex_match_free(&matches, nmatches);
-    if (session_id) free(session_id);
     free(command);
     for (int i = 0; i < nargs; i++)
         free(args[i]);
