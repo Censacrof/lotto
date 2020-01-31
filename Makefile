@@ -46,6 +46,7 @@ LIB_SERVER:=$(filter-out $(BIN_DIR)/server/server.o $(BIN_COMMON), $(BIN_SERVER)
 LIB_COMMON:=$(BIN_COMMON) # solo per leggibilità
 
 # compila tutti i tests
+.PHONY: test
 test: $(BIN_TEST)
 
 # testa le funzioni send_msg e recv_msg 
