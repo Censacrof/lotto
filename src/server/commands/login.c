@@ -60,7 +60,7 @@ int login(int client_sock, const char *client_addr_str, int nargs, char *args[])
     {
         session.id[i] = charset[rand() % (charsetlen + 1)];
     }
-    session.id[SESSIONID_LEN - 1] = '\0';
+    session.id[SESSIONID_LEN] = '\0';
     
     // invio il sessionid al client
     send_response(client_sock, SRESP_OK, session.id);
