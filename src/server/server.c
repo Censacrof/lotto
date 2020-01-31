@@ -11,7 +11,7 @@
 #include "../common.h"
 #include "commands.h"
 
-void handle_connection(int, const struct sockaddr_in *);
+void handle_connection(int, const char *client_addr_str, const int port);
 
 int main(int argc, char *argv[])
 {
@@ -53,6 +53,10 @@ int main(int argc, char *argv[])
     // ciclo di accettazione
     while (1)
     {
+        // resetto lo stato delle funzioni send_msg e recv_msg
+        last_msg_operation = MSGOP_NONE;
+
+        // accetto una connessione
         int client_sock;
         struct sockaddr_in client_addr;
         socklen_t client_addr_size = sizeof(client_addr);
@@ -62,6 +66,24 @@ int main(int argc, char *argv[])
             continue;
         }
 
+        // converto l'indirizzo del client in stringa
+        char client_addr_str[INET_ADDRSTRLEN + 1];
+        client_addr_str[INET_ADDRSTRLEN] = '\0';
+        inet_ntop(AF_INET, &(client_addr.sin_addr), client_addr_str, INET_ADDRSTRLEN);
+
+        // controllo se l'indirizzo del client è nella blacklist
+        time_t timeleft;
+        if (is_blacklisted(client_addr_str, &timeleft))
+        {
+            // segnalo al client che il suo indirizzo risulta in blacklist
+            send_response(client_sock, SRESP_ERR, "questo indirizzo risulta bannato a causa dei numerosi tentativi di login falliti. riprovare più tardi");
+
+            // chiudo la connessione e ricomincio il ciclo di accettazione
+            close(client_sock);
+            continue;
+        }
+
+        // creo un processo figlio per gestire la connessione
         pid_t child_pid;
         if ((child_pid = fork()) == -1)
         {
@@ -75,7 +97,7 @@ int main(int argc, char *argv[])
             close(server_sock);
 
             // gestisco la connessione con il client
-            handle_connection(client_sock, &client_addr);
+            handle_connection(client_sock, client_addr_str, ntohs(client_addr.sin_port));
 
             // una volta gestita la connessione termino il processo
             exit(EXIT_SUCCESS);
@@ -89,19 +111,17 @@ int main(int argc, char *argv[])
     exit(EXIT_SUCCESS);
 }
 
-void handle_connection(int client_sock, const struct sockaddr_in *client_addr)
+void handle_connection(int client_sock, const char *client_addr_str, const int port)
 {
     pid_t pid = getpid();
-    
-    // converto l'indirizzo del client in stringa
-    char client_addr_str[INET_ADDRSTRLEN + 1];
-    client_addr_str[INET_ADDRSTRLEN] = '\0';
-    inet_ntop(AF_INET, client_addr, client_addr_str, INET_ADDRSTRLEN);
 
     // inizializzo la variabile globale whoami
-    sprintf(whoiam, "%d:%s:%d", pid, client_addr_str, ntohs(client_addr->sin_port));
+    sprintf(whoiam, "%d:%s:%d", pid, client_addr_str, port);
 
     consolelog("connessione stabilita\n");
+
+    // segnalo al client che il server è pronto a ricevere comandi
+    send_response(client_sock, SRESP_OK, "benvenuto. pronto a ricevere comandi");
 
     // main loop
     while (1)
@@ -117,12 +137,18 @@ void handle_connection(int client_sock, const struct sockaddr_in *client_addr)
 
         // controllo se il client ha chiuso la connessione
         if (len == 0)
-        {
-            consolelog("connessione chiusa\n");
-            exit(0);
-        }
+            break;
         
-        execute_command(client_sock, msg, client_addr_str);
+        // eseguo il comando inviato dal client
+        int reti = execute_command(client_sock, msg, client_addr_str);
         free(msg);
+
+        // se c'è bisogno chiudo la connessione ed esco dal ciclo
+        if (reti == -1)
+            break;
     }
+
+    consolelog("connessione chiusa\n");
+    close(client_sock);
+    exit(0);
 }

@@ -39,6 +39,21 @@ int main(int argc, char *argv[])
 
     while (1)
     {
+        // ricevo la risposta dal server
+        char *res;
+        int received = recv_msg(sockfd, &res);
+        if (received == -1)
+            die("impossibile ricevere un messaggio");
+        else if (received == 0)
+        {
+            printf("\nil server ha chiuso la connessione\n");
+            break; 
+        }
+        
+        printf("%s\n", res);
+        free(res);
+
+        // invio un comando al server
         printf("> ");
         
         char *req = NULL;
@@ -64,21 +79,6 @@ int main(int argc, char *argv[])
         {
             perror("impossibile inviare un messaggio");
             continue;
-        }
-        else
-        {
-            char *res;
-            int received = recv_msg(sockfd, &res);
-            if (received == -1)
-                die("impossibile ricevere un messaggio");
-            else if (received == 0)
-            {
-                printf("\nil server ha chiuso la connessione\n");
-                break; 
-            }
-            
-            printf("%s\n", res);
-            free(res);
         }
     }
     

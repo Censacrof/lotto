@@ -8,6 +8,7 @@
 // inizializzo la variabile globale session
 struct session session = { "", "" };
 
+// restituisce -1 se va chiusa la connessione (non per forza a causa di un errore)
 int execute_command(int client_sock, char *msg, const char *client_addr_str)
 {
     char **matches;
@@ -69,15 +70,17 @@ int execute_command(int client_sock, char *msg, const char *client_addr_str)
         );
     consolelog("comando ricevuto: %s\n", strbuff);
 
+    // valore che verrà restituito in fondo alla funzione (modificato dalle funzioni che eseguono i comandi)
+    int ret = 0;
+    
     // in base al comando eseguo la funzione ad esso associata
-    int ret;
     if (strcmp(command, "signup") == 0)
     {
         ret = signup(client_sock, nargs, args);
     }
     else if (strcmp(command, "login") == 0)
     {
-        ret = login(client_sock, nargs, args);
+        ret = login(client_sock, client_addr_str, nargs, args);
     }
     else
     {
@@ -101,7 +104,7 @@ int execute_command(int client_sock, char *msg, const char *client_addr_str)
         free(args[i]);
     free(args);    
     
-    return 0;
+    return ret;
 }
 
 
