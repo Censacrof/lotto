@@ -378,7 +378,7 @@ int is_blacklisted(const char *ip, time_t *timeleft)
     int retval = 0;
 
     // array che contiene le entry della blacklist
-    int n_entries;
+    int n_entries = 0;
     struct blacklist_entry {
         char addr[INET_ADDRSTRLEN + 1];
         time_t timestamp;
