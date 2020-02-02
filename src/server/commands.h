@@ -8,7 +8,7 @@
 // la struttura dei messaggi ricevuti dal server (escluso i primi 2 bytes).
 // il primo carattere puo' essere N o S per distinguere i casi
 // in cui il messaggio contiene un session id oppure no.
-#define S_MSGREGEX "^(N|S[a-z0-9]{10})!([a-z_0-9]+) *(([A-z_0-9]+ *)*) *$"
+#define S_MSGREGEX "^(N|S[a-z0-9]{10})!([A-z_0-9]+) *(([A-z_0-9]+ *)*) *$"
 
 // indici dei match relativi al caso in di messaggio senza session id
 #define S_MSGN_COMMAND 2
