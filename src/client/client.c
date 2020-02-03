@@ -8,12 +8,13 @@
 
 #include "../common.h"
 
-int get_response(int sockfd, int *code, char **info);
+char sessionid[SESSIONID_LEN + 1] = "";
 
+int send_command(int sockfd, const char *command, int argc, char *args[]);
+int get_response(int sockfd, int *code, char **info);
 
 int main(int argc, char *argv[])
 {
-
     // creo il socket di comunicazione
     int server_sock;
     if ((server_sock = socket(
@@ -94,7 +95,7 @@ int main(int argc, char *argv[])
         }
         
         // eseguo il comando corrispondente
-
+        send_command(server_sock, command, nargs, args);
 
         // libero le risorse che non servono piu'
         regex_match_free(&matches, nmatches);
@@ -108,6 +109,45 @@ int main(int argc, char *argv[])
     exit(EXIT_SUCCESS);
 }
 
+
+// invia un comando sul socket sockfd. restituisce la lunghezza del messaggio inviato oppure -1 in caso di errori.
+// restituisce 0 se la connessione è stata chiusa.
+int send_command(int sockfd, const char *command, int argc, char *args[])
+{
+    char *msg;
+    size_t msglen;
+
+    // apro un mem_stream. permette di scrivere in buffer in memoria allocato dinamicamente la cui dimensione
+    // cambia automaticamente con le scritture. scrivo nel buffer tramite fprintf e dopo che avrò chiuso l stream
+    // msg punterà al buffer e msglen conterrà lunghezza del buffer. analogo agli stringstream del c++.
+    FILE *f = open_memstream(&msg, &msglen);
+    if (!f)
+        die("(send_command) impossibile aprire memstream");
+    
+    // se il client ha già ottenuto un sessionid
+    if (sessionid[0] != '\0')
+        fprintf(f, "S%s!", sessionid);
+    else
+        fprintf(f, "N!");
+    
+    // comando
+    fprintf(f, "%s", command);
+
+    // argomenti
+    for (int i = 0; i < argc; i++)
+        fprintf(f, " %s", args[i]);
+    
+    // chiudo lo stream
+    fclose(f);
+
+    // invio il messaggio
+    int ret = send_msg(sockfd, msg);
+    
+    // libero il buffer contenente il messaggio
+    free(msg);
+    
+    return ret;
+}
 
 // riceve un messaggio dal server ed estrae il campo codice di risposta ed info.
 // per info viene allocata dinamicamente una stringa. ricordarsi di usare free.
