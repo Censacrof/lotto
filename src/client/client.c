@@ -8,53 +8,8 @@
 
 #include "../common.h"
 
-// riceve un messaggio dal server ed estrae il campo codice di risposta ed info.
-// per info viene allocata dinamicamente una stringa. ricordarsi di usare free.
-// restituisce la lunghezza della risposta ricevuta (0 se la connessione è stata chiusa) o -1 in caso di errore.
-int get_response(int sockfd, int *code, char **info)
-{
-    char *resp;
-    int resplen;
-    if ((resplen = recv_msg(sockfd, &resp)) == -1)
-    {
-        consolelog("impossibile ricevere un messaggio\n");
-        return -1;
-    }
+int get_response(int sockfd, int *code, char **info);
 
-    char **matches = NULL;
-    int nmatches = regex_match("^([0-9]+)([ \\n\\r\\t]+(.*))?", resp, &matches);
-    free(resp);
-
-    // se non ci sono matches
-    if (nmatches == 0)
-    {
-        consolelog("la risposta è in un formato sconosciuto:\n%s\n");;
-        return -1;
-    }
-
-    // estraggo il codice di risposta
-    sscanf(matches[1], "%d", code);
-
-    // se la risposta non contiene info
-    if (nmatches < 4)
-    {
-        // metto una stringa vuota in info
-        *info = malloc(sizeof(char) * 1);
-        (*info)[0] = '\0';
-    }
-
-    // altrimenti la risposta contiene info
-    else
-    {
-        // copio il match in info
-        int len = strlen(matches[3]);
-        *info = malloc(sizeof(char) * (len + 1));
-        strcpy(*info, matches[3]);
-    }
-
-    regex_match_free(&matches, nmatches);
-    return resplen;
-}
 
 int main(int argc, char *argv[])
 {
@@ -139,7 +94,7 @@ int main(int argc, char *argv[])
         }
         
         // eseguo il comando corrispondente
-        
+
 
         // libero le risorse che non servono piu'
         regex_match_free(&matches, nmatches);
@@ -151,4 +106,53 @@ int main(int argc, char *argv[])
     
     close(server_sock);
     exit(EXIT_SUCCESS);
+}
+
+
+// riceve un messaggio dal server ed estrae il campo codice di risposta ed info.
+// per info viene allocata dinamicamente una stringa. ricordarsi di usare free.
+// restituisce la lunghezza della risposta ricevuta (0 se la connessione è stata chiusa) o -1 in caso di errore.
+int get_response(int sockfd, int *code, char **info)
+{
+    char *resp;
+    int resplen;
+    if ((resplen = recv_msg(sockfd, &resp)) == -1)
+    {
+        consolelog("impossibile ricevere un messaggio\n");
+        return -1;
+    }
+
+    char **matches = NULL;
+    int nmatches = regex_match("^([0-9]+)([ \\n\\r\\t]+(.*))?", resp, &matches);
+    free(resp);
+
+    // se non ci sono matches
+    if (nmatches == 0)
+    {
+        consolelog("la risposta è in un formato sconosciuto:\n%s\n");;
+        return -1;
+    }
+
+    // estraggo il codice di risposta
+    sscanf(matches[1], "%d", code);
+
+    // se la risposta non contiene info
+    if (nmatches < 4)
+    {
+        // metto una stringa vuota in info
+        *info = malloc(sizeof(char) * 1);
+        (*info)[0] = '\0';
+    }
+
+    // altrimenti la risposta contiene info
+    else
+    {
+        // copio il match in info
+        int len = strlen(matches[3]);
+        *info = malloc(sizeof(char) * (len + 1));
+        strcpy(*info, matches[3]);
+    }
+
+    regex_match_free(&matches, nmatches);
+    return resplen;
 }
