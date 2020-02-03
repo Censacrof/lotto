@@ -259,12 +259,15 @@ int regex_match(const char *regex_txt, const char *str, char **matches[])
     {
         if (matches)
             *matches = NULL;
+        
+        regfree(&regex);
         return 0;
     }
     else if (status != 0) // c'e' stato un errore
     {
         regerror(status, &regex, error_buf, sizeof(error_buf)); // copio il messaggio di errore in error_buf
         fprintf(stderr, "Regex match failed: %s\n", error_buf);
+        regfree(&regex);
         exit(EXIT_FAILURE);
     }
 
