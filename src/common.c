@@ -148,7 +148,7 @@ int recv_msg(int sockfd, char **s)
         n -= read;
         base += read;
     } while(n > 0);
-    (*s)[msg_len + 1] = '\0'; // rendo la stringa null terminated
+    (*s)[msg_len] = '\0'; // rendo la stringa null terminated
 
     return msg_len;
 }
