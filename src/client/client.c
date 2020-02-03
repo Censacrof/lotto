@@ -102,7 +102,51 @@ int main(int argc, char *argv[])
     // main loop
     while (1)
     {
+        // promtp
+        printf("> ");
+
+        // leggo un comando
+        char userinput[1024];
+        fgets(userinput, sizeof(userinput) / sizeof(char), stdin);
+
+        // estraggo comando e argomenti
+        char **matches;
+        int nmatches = regex_match("^ *!?([A-z_0-9]+) *(([A-z_0-9]+ *)*) *$", userinput, &matches);
         
+        // se il comando non è nel formato corretto continuo
+        if (nmatches == 0)
+        {
+            printf("il formato del comando non è corretto\n");
+            continue;
+        }
+
+        // copio il comando
+        char *command = malloc(sizeof(char) * strlen(matches[1]));
+        strcpy(command, matches[1]);
+
+        // eseguo la tokenizzazione degli argomenti
+        const char delimiters[] = " \n\r\t";
+        char **args = NULL;
+        int nargs = 0;
+        char *token = strtok(matches[2], delimiters);
+        while (token)
+        {
+            nargs++;
+            args = realloc(args, sizeof(char *) * nargs);
+            args[nargs - 1] = malloc(sizeof(char) * (strlen(token) + 1));
+            strcpy(args[nargs - 1], token);
+            token = strtok(NULL, delimiters);
+        }
+        
+        // eseguo il comando corrispondente
+        
+
+        // libero le risorse che non servono piu'
+        regex_match_free(&matches, nmatches);
+        free(command);
+        for (int i = 0; i < nargs; i++)
+            free(args[i]);
+        free(args);
     }
     
     close(server_sock);
