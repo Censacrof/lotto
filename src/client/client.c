@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
         }
 
         // copio il comando
-        char *command = malloc(sizeof(char) * strlen(matches[1]));
+        char *command = malloc(sizeof(char) * (strlen(matches[1]) + 1));
         strcpy(command, matches[1]);
 
         // eseguo la tokenizzazione degli argomenti
