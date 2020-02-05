@@ -290,7 +290,7 @@ int regex_match(const char *regex_txt, const char *str, char **matches[])
             int mlen = match_offsets[i].rm_eo - match_offsets[i].rm_so; // lunghezza del match
             
             // alloco un buffer e ci copio la stringa (null terminated)
-            (*matches)[i] = (char *) malloc(sizeof(char *) * (nmatches + 1));
+            (*matches)[i] = (char *) malloc(sizeof(char *) * (mlen + 1));
             strncpy((*matches)[i], mbase, mlen);
             (*matches)[i][mlen] = '\0'; // rendo la stringa null terminated
         }
