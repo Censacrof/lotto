@@ -25,29 +25,42 @@ int signup(int client_sock, int nargs, char *args[])
     // controllo se l'username è gia utilizzato ed è valido (3 tentativi)
     int i;
     for (i = 0; i < N_TENTATIVI; i++)
-    {    
-        // se l'username è già utilizzato (esiste un file data/utenti/username)
-        // oppure non è valido
-        if (regex_match(USERNAME_REGEX, args[0], NULL) == 0 || utente_exists(args[0]))
+    {
+        // controllo se l'username è valido
+        int nmatches;
+        char **matches;
+        if ((nmatches = regex_match("^[ \\n\\r\\t]*(" USERNAME_REGEX_WITHOUT_ANCHORS ")[ \\n\\r\\t]*$", args[0], &matches)) != 2)
+            goto nonvalidusername;
+        
+        // sostituisco in args[0] la versione "estratta" dell'username (senza spazi all'inizio o alla fine)
+        free(args[0]);
+        args[0] = malloc(sizeof(char) * (strlen(matches[1]) + 1));
+        strcpy(args[0], matches[1]);
+        regex_match_free(&matches, nmatches);
+
+        // se l'username non è già utilizzato (non esiste un file data/utenti/username)
+        // esco dal ciclo
+        if (!utente_exists(args[0]))
+            break;
+
+    nonvalidusername:
+        if (i == N_TENTATIVI - 1)
         {
-            if (i == N_TENTATIVI - 1)
-            {
-                send_response(client_sock, SRESP_BADREQ, "username già in uso/non valido e tentativi terminati");
-                return 0;
-            }
-
-            // dico al client di mandare un altro username
-            send_response(client_sock, SRESP_RETRY, "username già in uso/non valido");
-            
-            // libero la stringa puntata da args[0]
-            free(args[0]);
-
-            // ricevo il nuovo username e lo copio in args[0]
-            int reti;
-            reti = recv_msg(client_sock, &args[0]);
-            if (reti == 0 || reti == -1) // se il client ha chiuso la connessione o c'è stato un errore
-                return reti;
+            send_response(client_sock, SRESP_BADREQ, "username già in uso/non valido e tentativi terminati");
+            return 0;
         }
+
+        // dico al client di mandare un altro username
+        send_response(client_sock, SRESP_RETRY, "username già in uso/non valido");
+        
+        // libero la stringa puntata da args[0]
+        free(args[0]);
+
+        // ricevo il nuovo username e lo copio in args[0]
+        int reti;
+        reti = recv_msg(client_sock, &args[0]);
+        if (reti == 0 || reti == -1) // se il client ha chiuso la connessione o c'è stato un errore
+            return reti;
     }
 
     // genero l'hash della password inviata dall'utente utilizzando l'algoritmo sha512crypt
