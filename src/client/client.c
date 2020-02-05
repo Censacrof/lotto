@@ -7,13 +7,22 @@
 #include <arpa/inet.h>
 
 #include "../common.h"
+#include "../data.h"
 
 char sessionid[SESSIONID_LEN + 1] = "";
 
-int send_command(int sockfd, const char *command, int argc, char *args[]);
-int get_response(int sockfd, int *code, char **info);
+#define RESPINFO_LEN 1024
+struct response {
+    enum server_response code;
+    char info[RESPINFO_LEN + 1];
+};
 
-int main(int argc, char *argv[])
+int send_command(int sockfd, const char *command, int argc, char *args[]);
+int get_response(int sockfd, struct response *resp);
+
+int signup(int sockfd, int argc, char *args[]);
+
+int main(int shellargc, char *shellargv[])
 {
     // creo il socket di comunicazione
     int server_sock;
@@ -40,17 +49,16 @@ int main(int argc, char *argv[])
 
     // ricevo dal server il messaggio di benvenuto (o di non benuto se siamo in blacklist)
     int resplen;
-    int code;
-    char *info;
-    if ((resplen = get_response(server_sock, &code, &info)) <= 0)
+    struct response resp;
+    if ((resplen = get_response(server_sock, &resp)) <= 0)
     {
         consolelog("impossibile ottenere messaggio di benvenuto");
         exit(EXIT_FAILURE);
     }
 
-    if (code != SRESP_OK)
+    if (resp.code != SRESP_OK)
     {
-        consolelog("il server ha chiuso la connessione: %s", info);
+        consolelog("il server ha chiuso la connessione: %s", resp.info);
         close(server_sock);
         exit(EXIT_SUCCESS);
     }
@@ -59,7 +67,7 @@ int main(int argc, char *argv[])
     while (1)
     {
         // promtp
-        printf("> ");
+        printf("\n> ");
 
         // leggo un comando
         char userinput[1024];
@@ -93,9 +101,16 @@ int main(int argc, char *argv[])
             strcpy(args[nargs - 1], token);
             token = strtok(NULL, delimiters);
         }
+
+        int ret;
         
         // eseguo il comando corrispondente
-        send_command(server_sock, command, nargs, args);
+        if (strcmp(command, "signup") == 0)
+            ret = signup(server_sock, nargs, args);
+        
+        // comando sconosciuto
+        else
+            printf("comando sconosciuto\n");
 
         // libero le risorse che non servono piu'
         regex_match_free(&matches, nmatches);
@@ -103,6 +118,10 @@ int main(int argc, char *argv[])
         for (int i = 0; i < nargs; i++)
             free(args[i]);
         free(args);
+
+        // se la funzione che ha gestito il comando ha restituito -1 esco
+        if (ret == -1)
+            break;
     }
     
     close(server_sock);
@@ -149,50 +168,93 @@ int send_command(int sockfd, const char *command, int argc, char *args[])
     return ret;
 }
 
-// riceve un messaggio dal server ed estrae il campo codice di risposta ed info.
-// per info viene allocata dinamicamente una stringa. ricordarsi di usare free.
+// riceve un messaggio dal server ed estrae il campo codice di risposta ed informazioni aggiuntive.
 // restituisce la lunghezza della risposta ricevuta (0 se la connessione è stata chiusa) o -1 in caso di errore.
-int get_response(int sockfd, int *code, char **info)
+int get_response(int sockfd, struct response *resp)
 {
-    char *resp;
-    int resplen;
-    if ((resplen = recv_msg(sockfd, &resp)) == -1)
+    // azzero la struttura
+    resp->code = SRESP_ERR;
+    resp->info[0] = '\0';
+
+    char *resptxt;
+    int ret;
+    if ((ret = recv_msg(sockfd, &resptxt)) == -1)
     {
         consolelog("impossibile ricevere un messaggio\n");
         return -1;
     }
-
-    char **matches = NULL;
-    int nmatches = regex_match("^([0-9]+)([ \\n\\r\\t]+(.*))?", resp, &matches);
-    free(resp);
-
-    // se non ci sono matches
-    if (nmatches == 0)
+    else if (ret == 0)
     {
-        consolelog("la risposta è in un formato sconosciuto:\n%s\n");;
-        return -1;
+        consolelog("il server ha chiuso la connessione\n");
+        return 0;
     }
 
-    // estraggo il codice di risposta
-    sscanf(matches[1], "%d", code);
+    // eseguo la regex adeguata sulla risposta del sever
+    char **matches;
+    int nmatches = regex_match("^([0-9]+)([ \\n\\r\\t]+(.*))?", resptxt, &matches);
+    free(resptxt);
 
-    // se la risposta non contiene info
-    if (nmatches < 4)
+    // se il formato della risposta non è quello aspettato
+    if (nmatches != 2 && nmatches != 4)
     {
-        // metto una stringa vuota in info
-        *info = malloc(sizeof(char) * 1);
-        (*info)[0] = '\0';
+        consolelog("formato della risposta del server sconosciuto");
+        ret = -1;
+        goto end;
     }
 
-    // altrimenti la risposta contiene info
-    else
-    {
-        // copio il match in info
-        int len = strlen(matches[3]);
-        *info = malloc(sizeof(char) * (len + 1));
-        strcpy(*info, matches[3]);
-    }
+    // estraggo il codice
+    sscanf(matches[1], "%d", (int *) &resp->code);
 
+    // estraggo le info (se sono presenti)
+    if (nmatches == 4)
+        strncpy(resp->info, matches[3], RESPINFO_LEN);
+    
+    printf("[%d]: %s\n", resp->code, resp->info);
+
+end:
     regex_match_free(&matches, nmatches);
-    return resplen;
+    return ret;
+}
+
+
+// ----------------------------- comandi -----------------------------
+int signup(int sockfd, int argc, char *args[])
+{
+    if (argc != 2)
+    {
+        printf("numero di parametri errato\n");
+        return 0;
+    }
+
+    if (send_command(sockfd, "signup", argc, args) == -1)
+        return -1;
+
+    struct response resp;
+    while (1)
+    {
+        // attendo la risposta dal server
+        if (get_response(sockfd, &resp) == -1)
+            return -1;
+        
+        switch (resp.code)
+        {
+            case SRESP_RETRY:
+            {
+                printf("\tusername: ");
+                char username[USERNAME_LEN + 1];
+                fgets(username, USERNAME_LEN, stdin);
+                
+                send_msg(sockfd, username);
+                continue;
+            }                
+            
+            case SRESP_OK:
+                return 0;
+        
+            default:
+                return -1;
+        }
+    }
+
+    return 0;
 }
