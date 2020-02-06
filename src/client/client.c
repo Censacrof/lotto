@@ -324,11 +324,12 @@ int invia_giocata(int sockfd, int argc, char *args[])
     } state = EXPECT_OPTION;
     
     // server per mostrare più detagli riguardo all'uso scorretto del comando
-    char expected_str[NUM_EXPECTED][128];
-    strcpy(expected_str[EXPECT_OPTION], "opzione {-r, -n, -i}");
-    strcpy(expected_str[EXPECT_RUOTA], "ruota");
-    strcpy(expected_str[EXPECT_NUMERO], "numero da giocare {tra 1 e 90}");
-    strcpy(expected_str[EXPECT_IMPORTO], "importo in euro { 0.00, 0.05, 0.10, 0.20, 0.50, 1.00, 2.00, 3.00, 5.00, 10.00, 20.00, 50.00, 100.00, 200.00 }");
+    const char expected_str[NUM_EXPECTED][128] = {
+        [EXPECT_OPTION] = "opzione {-r, -n, -i}",
+        [EXPECT_RUOTA] = "ruota",
+        [EXPECT_NUMERO] = "numero da giocare {tra 1 e 90}",
+        [EXPECT_IMPORTO] = "importo in euro { 0.00, 0.05, 0.10, 0.20, 0.50, 1.00, 2.00, 3.00, 5.00, 10.00, 20.00, 50.00, 100.00, 200.00 }"
+    };
 
     int i;
     char *arg = "";
