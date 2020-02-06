@@ -118,6 +118,9 @@ int main(int argc, char *argv[])
 
 void handle_connection(int client_sock, const char *client_addr_str, const int port)
 {
+    // randomizzo
+    srand(time(NULL));
+
     pid_t pid = getpid();
 
     // inizializzo la variabile globale whoami
