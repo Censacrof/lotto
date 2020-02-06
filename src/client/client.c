@@ -26,6 +26,7 @@ int get_response(int sockfd, struct response *resp, int echo);
 
 int signup(int sockfd, int argc, char *args[]);
 int login(int sockfd, int argc, char *args[]);
+int invia_giocata(int sockfd, int argc, char *args[]);
 
 int main(int shellargc, char *shellargv[])
 {
@@ -115,6 +116,9 @@ int main(int shellargc, char *shellargv[])
         
         else if (strcmp(command, "login") == 0)
             ret = login(server_sock, nargs, args);
+        
+        else if (strcmp(command, "invia_giocata") == 0)
+            ret = invia_giocata(server_sock, nargs, args);
         
         // comando sconosciuto
         else
@@ -295,5 +299,17 @@ int login(int sockfd, int argc, char *args[])
         return -1;
     }    
 
+    return 0;
+}
+
+int invia_giocata(int sockfd, int argc, char *args[])
+{
+    if (send_command(sockfd, "invia_giocata", argc, args) <= 0)
+        return -1;
+    
+    struct response resp;
+    if (get_response(sockfd, &resp, 1) <= 0)
+        return -1;
+    
     return 0;
 }
