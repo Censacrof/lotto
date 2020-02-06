@@ -81,7 +81,7 @@ int main(int shellargc, char *shellargv[])
 
         // estraggo comando e argomenti
         char **matches;
-        int nmatches = regex_match("^ *!?([A-z_0-9]+) *(([A-z_0-9]+ *)*) *$", userinput, &matches);
+        int nmatches = regex_match("^ *!?([A-z_0-9]+) *(([-.A-z_0-9]+ *)*) *$", userinput, &matches);
         
         // se il comando non è nel formato corretto continuo
         if (nmatches == 0)
@@ -304,12 +304,144 @@ int login(int sockfd, int argc, char *args[])
 
 int invia_giocata(int sockfd, int argc, char *args[])
 {
-    if (send_command(sockfd, "invia_giocata", argc, args) <= 0)
+    // costrusco una schedina con i parametri passati dall'utente
+    schedina_t schedina;
+    memset(&schedina, 0, sizeof(schedina));
+
+    // interi che indicano se le varie parti della schedina sono state specificate e in quale quantità
+    int got_ruote = 0;
+    int got_numeri = 0;
+    int got_importi = 0;
+
+    // automa a stati finiti
+    enum {
+        EXPECT_OPTION,
+        EXPECT_RUOTA,
+        EXPECT_NUMERO,
+        EXPECT_IMPORTO,
+
+        NUM_EXPECTED
+    } state = EXPECT_OPTION;
+    
+    // server per mostrare più detagli riguardo all'uso scorretto del comando
+    char expected_str[NUM_EXPECTED][128];
+    strcpy(expected_str[EXPECT_OPTION], "opzione {-r, -n, -i}");
+    strcpy(expected_str[EXPECT_RUOTA], "ruota");
+    strcpy(expected_str[EXPECT_NUMERO], "numero da giocare {tra 1 e 90}");
+    strcpy(expected_str[EXPECT_IMPORTO], "importo in euro { 0.00, 0.05, 0.10, 0.20, 0.50, 1.00, 2.00, 3.00, 5.00, 10.00, 20.00, 50.00, 100.00, 200.00 }");
+
+    int i;
+    char *arg = "";
+    for (i = 0; i < argc; i++)
+    {
+        // argomento corrente
+        arg = args[i];
+
+        // se l'argomento corrente è un'opzione e non stiamo aspettando opzioni
+        // imposto lo stato a EXPECT_OPTION e ripeto l'iterazione
+        if (arg[0] == '-' && state != EXPECT_OPTION)
+        {
+            i--;
+            state = EXPECT_OPTION;
+            continue;
+        }
+
+        switch (state)
+        {
+            case EXPECT_OPTION:
+                if (strcmp(arg, "-r") == 0)
+                {
+                    state = EXPECT_RUOTA;
+                    continue;
+                }
+                else if (strcmp(arg, "-n") == 0)
+                {
+                    state = EXPECT_NUMERO;
+                    continue;
+                }
+                else if (strcmp(arg, "-i") == 0)
+                {
+                    state = EXPECT_IMPORTO;
+                    continue;
+                }
+                else
+                    goto wrongparameter;
+                break; // switch
+
+            case EXPECT_RUOTA:
+            {
+                // TODO: implementare
+                got_ruote++;
+                break; // switch
+            }
+            
+            case EXPECT_NUMERO:
+            {
+                // controllo se i numeri sono già stati tutti inseriti
+                if (got_numeri >= N_DA_GIOCARE)
+                {
+                    printf("numero di numeri da giocare superato");
+                    goto usage;
+                }
+
+                // controllo se l'argomento è un numero da giocare valido
+                int n;
+                if (!numero_da_giocare_valido(arg, &n))
+                    goto wrongparameter;
+                
+                // il parametro è valido quindi lo inserisco nella schedina
+                schedina.numeri[got_numeri] = n;
+                got_numeri++;
+                break; // switch
+            }
+
+            case EXPECT_IMPORTO:
+            {
+                // controllo se gli importi sono già stati specificati per tutte le scommesse
+                if (got_importi >= N_DA_GIOCARE)
+                {
+                    printf("il numero di numeri supera il numero di tipi di scomesse (estratto, ambo, ..., cinquina)");
+                    goto usage;
+                }
+
+                // controllo se l'argomento è un importo valido
+                int n;
+                if (!importo_valido(arg, &n))
+                    goto wrongparameter;
+                
+                // il parametro è valido quindi lo inserisco nella schedina
+                schedina.importi_scommesse[got_importi] = n;
+                got_importi++;
+                break; // switch
+            }
+            
+            case NUM_EXPECTED: // specifico per non produrre warnings durante la compilazione
+                break; // switch
+        }
+    }
+
+    // se ci sono delle sezioni della schedina che risultano non compilate
+    if (got_ruote == 0 || got_numeri == 0 || got_importi == 0)
+    {
+        printf("parametri mancanti\n");
+        goto usage;
+    }
+
+    char *dummy_args = ""; // il comando lato server non ha argomenti (le schedine vengo scambiati successivamente)
+    if (send_command(sockfd, "invia_giocata", 0, (char **) dummy_args) <= 0)
         return -1;
     
     struct response resp;
     if (get_response(sockfd, &resp, 1) <= 0)
         return -1;
-    
+
+    return 0;
+
+wrongparameter:
+    printf("errore argomento %d: previsto \"%s\", trovato \"%s\"\n", i + 1, expected_str[state], arg);
+    goto usage;
+
+usage:
+    printf("uso: invia_giocata -r <ruota1 ... ruotaN> -n <num1 ... numN> -i <importoEstratto importoAmbo ... importoCinquina>\n");
     return 0;
 }
