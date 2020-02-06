@@ -16,11 +16,16 @@ struct response {
     enum server_response code;
     char info[RESPINFO_LEN + 1];
 };
+void echo_response(const struct response *resp)
+{
+    printf("[%d]: %s\n", resp->code, resp->info);
+}
 
 int send_command(int sockfd, const char *command, int argc, char *args[]);
-int get_response(int sockfd, struct response *resp);
+int get_response(int sockfd, struct response *resp, int echo);
 
 int signup(int sockfd, int argc, char *args[]);
+int login(int sockfd, int argc, char *args[]);
 
 int main(int shellargc, char *shellargv[])
 {
@@ -50,7 +55,7 @@ int main(int shellargc, char *shellargv[])
     // ricevo dal server il messaggio di benvenuto (o di non benuto se siamo in blacklist)
     int resplen;
     struct response resp;
-    if ((resplen = get_response(server_sock, &resp)) <= 0)
+    if ((resplen = get_response(server_sock, &resp, 1)) <= 0)
     {
         consolelog("impossibile ottenere messaggio di benvenuto");
         exit(EXIT_FAILURE);
@@ -107,6 +112,9 @@ int main(int shellargc, char *shellargv[])
         // eseguo il comando corrispondente
         if (strcmp(command, "signup") == 0)
             ret = signup(server_sock, nargs, args);
+        
+        else if (strcmp(command, "login") == 0)
+            ret = login(server_sock, nargs, args);
         
         // comando sconosciuto
         else
@@ -170,7 +178,7 @@ int send_command(int sockfd, const char *command, int argc, char *args[])
 
 // riceve un messaggio dal server ed estrae il campo codice di risposta ed informazioni aggiuntive.
 // restituisce la lunghezza della risposta ricevuta (0 se la connessione è stata chiusa) o -1 in caso di errore.
-int get_response(int sockfd, struct response *resp)
+int get_response(int sockfd, struct response *resp, int echo)
 {
     // azzero la struttura
     resp->code = SRESP_ERR;
@@ -209,7 +217,8 @@ int get_response(int sockfd, struct response *resp)
     if (nmatches == 4)
         strncpy(resp->info, matches[3], RESPINFO_LEN);
     
-    printf("[%d]: %s\n", resp->code, resp->info);
+    if (echo)
+        echo_response(resp);
 
 end:
     regex_match_free(&matches, nmatches);
@@ -226,14 +235,14 @@ int signup(int sockfd, int argc, char *args[])
         return 0;
     }
 
-    if (send_command(sockfd, "signup", argc, args) == -1)
+    if (send_command(sockfd, "signup", argc, args) <= 0)
         return -1;
 
     struct response resp;
     while (1)
     {
         // attendo la risposta dal server
-        if (get_response(sockfd, &resp) == -1)
+        if (get_response(sockfd, &resp, 1) == -1)
             return -1;
         
         switch (resp.code)
@@ -255,6 +264,36 @@ int signup(int sockfd, int argc, char *args[])
                 return -1;
         }
     }
+
+    return 0;
+}
+
+int login(int sockfd, int argc, char *args[])
+{
+    if (argc != 2)
+    {
+        printf("numero di parametri errato\n");
+        return 0;
+    }
+
+    if (send_command(sockfd, "login", argc, args) <= 0)
+        return -1;
+    
+    struct response resp;
+    if (get_response(sockfd, &resp, 0) <= 0)
+        return -1;
+    
+    if (resp.code == SRESP_OK && strlen(resp.info) == SESSIONID_LEN)
+    {
+        strcpy(sessionid, resp.info);
+        printf("login effettuato con successo\n");
+    }
+    else
+    {
+        printf("impossibile effettuare login\n");
+        echo_response(&resp);
+        return -1;
+    }    
 
     return 0;
 }
