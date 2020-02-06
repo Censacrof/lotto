@@ -325,10 +325,10 @@ int invia_giocata(int sockfd, int argc, char *args[])
     
     // server per mostrare più detagli riguardo all'uso scorretto del comando
     const char expected_str[NUM_EXPECTED][128] = {
-        [EXPECT_OPTION] = "opzione {-r, -n, -i}",
-        [EXPECT_RUOTA] = "ruota",
-        [EXPECT_NUMERO] = "numero da giocare {tra 1 e 90}",
-        [EXPECT_IMPORTO] = "importo in euro { 0.00, 0.05, 0.10, 0.20, 0.50, 1.00, 2.00, 3.00, 5.00, 10.00, 20.00, 50.00, 100.00, 200.00 }"
+        [EXPECT_OPTION] = "{-r, -n, -i}",
+        [EXPECT_RUOTA] = "{tutte, bari, cagliari, firenze, genova, milano, napoli, palermo, roma, torino, venezia, nazionale}",
+        [EXPECT_NUMERO] = "{tra 1 e 90}",
+        [EXPECT_IMPORTO] = "{ 0.00, 0.05, 0.10, 0.20, 0.50, 1.00, 2.00, 3.00, 5.00, 10.00, 20.00, 50.00, 100.00, 200.00 }"
     };
 
     int i;
@@ -371,8 +371,14 @@ int invia_giocata(int sockfd, int argc, char *args[])
 
             case EXPECT_RUOTA:
             {
-                // TODO: implementare
-                got_ruote++;
+                unsigned int mask;
+                if (!ruota_valida(arg, &mask))
+                    goto wrongparameter;
+
+                // setto il bit corrispondente alla ruota specificata
+                schedina.ruote_selezionate |= mask;
+
+                got_ruote = 1;
                 break; // switch
             }
             
