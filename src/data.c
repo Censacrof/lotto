@@ -10,6 +10,9 @@
 #include <sys/file.h>
 #include <errno.h>
 
+// lista degli importi che è possibile puntare (in centesimi)
+const int importi_possibili[] = { 0, 5, 10, 20, 50, 100, 200, 300, 500, 1000, 2000, 5000, 10000, 20000 };
+
 // crea le cartelle necessarie se non sono già presenti
 int inizializza_directories()
 {
@@ -65,6 +68,55 @@ int streamgettoken(FILE *stream, char **tok)
     } while(c != '\n' && c != '\r' && c != '\t' && c != ' ');
 
     return toklen;
+}
+
+// restituisce 1 se numstr è un numero da giocare valido altrimenti 0.
+// se è valido e num != NULL lo converte in intero e copia in num
+int numero_da_giocare_valido(const char *numstr, int *num)
+{
+    if (regex_match("^[0-9]+$", numstr, NULL) == 0)
+        return 0;
+    
+    int n;
+    sscanf(numstr, "%d", &n);
+    if (n < 1 || n > 90)
+        return 0;
+    
+    if (num)
+        *num = n;
+
+    return 1;
+}
+
+// restituisce 1 se importostr è un numero da giocare valido altrimenti 0.
+// se è valido e importo != NULL lo converte in intero e copia in importo
+int importo_valido(const char *importostr, int *importo)
+{
+    if (regex_match("^[0-9]+(.[0-9]{1,2})?$", importostr, NULL) == 0)
+        return 0;
+    
+    float f;
+    sscanf(importostr, "%f", &f);
+
+    // conversione da euro a centesimi
+    int n = (int) (f * 100.0f);
+
+    // controllo n è nella lista degli importi possibili
+    int valid = 0;
+    for (int i = 0; i < sizeof(importi_possibili) / sizeof(importi_possibili[0]); i++)
+        if (n == importi_possibili[i])
+        {
+            valid = 1;
+            break;
+        }
+    
+    if (!valid)
+        return 0;
+    
+    if (importo)
+        *importo = n;
+    
+    return 1;
 }
 
 

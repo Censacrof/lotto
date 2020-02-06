@@ -84,6 +84,9 @@ struct estrazione {
     int ruote[N_RUOTE][N_DA_ESTRARRE];
 };
 
+// lista degli importi che è possibile puntare (in centesimi)
+extern const int importi_possibili[];
+
 struct schedina {
     // array contenente i numeri da giocare
     int numeri[N_DA_GIOCARE];
@@ -115,6 +118,10 @@ struct utente {
     } *giocate;
 };
 
+
+// funzioni booleane per controllare la validità dei dati e convertirli
+int numero_da_giocare_valido(const char *numstr, int *num);
+int importo_valido(const char *importostr, int *importo);
 
 // funzioni di serializzazione e deserializzazione
 int serializza_int(FILE *stream, long long int i, int usespace);
