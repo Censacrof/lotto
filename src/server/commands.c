@@ -85,7 +85,7 @@ int execute_command(int client_sock, char *msg, const char *client_addr_str)
     }
 
     // controllo il sessionid
-    else if (strcmp(session_id, session.id) != 0)
+    else if (strcmp(session_id, session.id) != 0 || strlen(session_id) != SESSIONID_LEN)
     {
         if (session_id[0] == '\0')
             send_response(client_sock, SRESP_BADREQ, "è necessario fornire un sessionid");
@@ -126,7 +126,6 @@ int execute_command(int client_sock, char *msg, const char *client_addr_str)
     
     return ret;
 }
-
 
 int send_response(int client_sock, enum server_response code, char *info)
 {
