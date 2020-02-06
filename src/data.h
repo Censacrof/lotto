@@ -61,6 +61,9 @@ enum {
     N_RUOTE // numero di ruote
 };
 
+// array di strighe che contengono il nome delle varie ruote
+extern const char ruote_str[N_RUOTE][16];
+
 // indici degli array contenenti i tipi di scommessi
 enum {
     iESTRATTO,

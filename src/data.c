@@ -10,6 +10,21 @@
 #include <sys/file.h>
 #include <errno.h>
 
+// array di strighe che contengono il nome delle varie ruote
+const char ruote_str[N_RUOTE][16] = {
+    [iBARI] = "bari",
+    [iCAGLIARI] = "cagliari",
+    [iFIRENZE] = "firenze",
+    [iGENOVA] = "genova",
+    [iMILANO] = "milano",
+    [iNAPOLI] = "napoli",
+    [iPALERMO] = "palermo",
+    [iROMA] = "roma",
+    [iTORINO] = "torino",
+    [iVENEZIA] = "venezia",
+    [iNAZIONALE] = "nazionale"
+};
+
 // lista degli importi che è possibile puntare (in centesimi)
 const int importi_possibili[] = { 0, 5, 10, 20, 50, 100, 200, 300, 500, 1000, 2000, 5000, 10000, 20000 };
 
