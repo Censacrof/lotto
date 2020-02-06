@@ -122,9 +122,10 @@ struct utente {
 };
 
 
-// funzioni booleane per controllare la validità dei dati e convertirli
+// funzioni booleane per controllare la validità dei dati ed evntualmente convertirli
 int numero_da_giocare_valido(const char *numstr, int *num);
 int importo_valido(const char *importostr, int *importo);
+int ruota_valida(const char *ruotastr, unsigned int *ruotamask);
 
 // funzioni di serializzazione e deserializzazione
 int serializza_int(FILE *stream, long long int i, int usespace);

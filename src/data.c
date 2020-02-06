@@ -134,6 +134,40 @@ int importo_valido(const char *importostr, int *importo)
     return 1;
 }
 
+// restituisce 1 se ruotastr è una ruota valida altrimenti 0.
+// se è valida e ruotamask != NULL restituisce in ruotamask
+// la maschera corrispondente alla ruota
+int ruota_valida(const char *ruotastr, unsigned int *ruotamask)
+{
+    int valid = 0;
+    if (ruotamask)
+        *ruotamask = 0;
+    
+    // se si vuole selezionare tutte le ruote
+    if (strcmp(ruotastr, "tutte") == 0)
+    {
+        valid = 1;
+
+        if (ruotamask)
+            *ruotamask = -1u; // tutti i bit sono settati ad 1
+    }
+
+    // altrimenti controllo se la ruota specificata e' nella lista delle ruote valide
+    else 
+        for (int i = 0; i < N_RUOTE; i++)
+            if (strcmp(ruotastr, ruote_str[i]) == 0)
+            {
+                valid = 1;
+                if (ruotamask)
+                    *ruotamask = TOMASK(i);
+                break;
+            }
+    
+    if (!valid)
+        return 0;
+
+    return 1;
+}
 
 // -------------------------- int --------------------------
 int serializza_int(FILE *stream, long long int i, int usespace)
