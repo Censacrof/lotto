@@ -22,9 +22,7 @@ int signup(int client_sock, int nargs, char *args[])
     // l'username è case insensitive, quindi lo converto in lowercase per facilitare i confronti
     for (char *c = args[0]; *c; c++) *c = *c >= 'A' && *c <= 'Z' ? *c + 32 : *c;
 
-    // controllo se l'username è gia utilizzato ed è valido (3 tentativi)
-    int i;
-    for (i = 0; i < N_TENTATIVI; i++)
+    while (1)
     {
         // controllo se l'username è valido
         int nmatches;
@@ -44,12 +42,6 @@ int signup(int client_sock, int nargs, char *args[])
             break;
 
     nonvalidusername:
-        if (i == N_TENTATIVI - 1)
-        {
-            send_response(client_sock, SRESP_BADREQ, "username già in uso/non valido e tentativi terminati");
-            return 0;
-        }
-
         // dico al client di mandare un altro username
         send_response(client_sock, SRESP_RETRY, "username già in uso/non valido");
         
@@ -74,7 +66,7 @@ int signup(int client_sock, int nargs, char *args[])
     char salt[PASSWORDSALT_LEN + 1];
     char randomstr[17];
     randomstr[16] = '\0';
-    for (i = 0; i < 16; i++)
+    for (int i = 0; i < 16; i++)
     {
         const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ/.";
         randomstr[i] = charset[rand() % sizeof(charset - 1)];
