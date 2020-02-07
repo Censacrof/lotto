@@ -292,11 +292,15 @@ int login(int sockfd, int argc, char *args[])
         strcpy(sessionid, resp.info);
         printf("login effettuato con successo\n");
     }
+    else if (resp.code == SRESP_CLOSE)
+    {
+        printf("il server ha chiuso la connessione\n");
+        return -1;
+    }
     else
     {
         printf("impossibile effettuare login\n");
         echo_response(&resp);
-        return -1;
     }    
 
     return 0;

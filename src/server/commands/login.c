@@ -69,6 +69,14 @@ wrongcredentials:
     if (--tries_left <= 0)
         blacklist(client_addr_str);
     
-    send_response(client_sock, SRESP_RETRY, "username o password sono invalidi");
-    return tries_left > 0 ? 0 : -1;
+    int ret = 0;
+    int code = SRESP_RETRY; 
+    if (tries_left <= 0)
+    {
+        ret = 1;
+        code = SRESP_CLOSE;
+    }
+    
+    send_response(client_sock, code, "username o password sono invalidi");
+    return ret;
 }

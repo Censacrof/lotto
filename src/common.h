@@ -19,6 +19,9 @@ enum server_response {
     // la richiesta non era valida
     SRESP_BADREQ,
 
+    // il sever chiudera' la connessione in seguito a questo messaggio
+    SRESP_CLOSE,
+
     // usato solo per contare il numero di elementi dentro l'enum
     SRESP_NUM
 };
