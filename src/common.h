@@ -10,8 +10,11 @@ enum server_response {
     // la richiesta è andata a buon fine
     SRESP_OK,
 
-    // la richiesta era valida ma non è andata a buon fine
+    // il server chiede di rientare l'invio di dati
     SRESP_RETRY,
+
+    // il server chiede di continuare l'invio di dati
+    SRESP_CONTINUE,
 
     // si è verificato un errore durante l'esecuzione della richiesta
     SRESP_ERR,
