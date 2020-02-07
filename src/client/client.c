@@ -438,13 +438,38 @@ int invia_giocata(int sockfd, int argc, char *args[])
         goto usage;
     }
 
+    // invio il comando al server
     char *dummy_args = ""; // il comando lato server non ha argomenti (le schedine vengo scambiati successivamente)
     if (send_command(sockfd, "invia_giocata", 0, (char **) dummy_args) <= 0)
         return -1;
     
+    // ricevo la risposta
     struct response resp;
     if (get_response(sockfd, &resp, 1) <= 0)
         return -1;
+    
+    // se il server dice di continuare procedo alla serializzazione su sucket
+    // della schedina
+    if (resp.code == SRESP_CONTINUE)
+    {
+        // duplico il file descriptor del socket (necessario per poter chiamare
+        // fclose in seguito senza chiudere la connessione con il server)
+        int fd = dup(sockfd);
+
+        // associo uno stream al file descriptor (duplicato)
+        FILE *sockstream = fdopen(fd, "w");
+        if (!sockstream)
+        {
+            consolelog("impossibile creare stream per la serializzazione della schedina\n");
+            return -1;
+        }
+
+        // effettuo la serializzazione della schedina
+        serializza_schedina(sockstream, &schedina);
+
+        // chiudo lo stream
+        fclose(sockstream);
+    }
 
     return 0;
 
