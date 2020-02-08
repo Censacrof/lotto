@@ -18,7 +18,7 @@ struct response {
 };
 void echo_response(const struct response *resp)
 {
-    printf("[%d]: %s\n", resp->code, resp->info);
+    printf("[%s]: %s\n", server_response_str[resp->code], resp->info);
 }
 
 int send_command(int sockfd, const char *command, int argc, char *args[]);
@@ -58,13 +58,13 @@ int main(int shellargc, char *shellargv[])
     struct response resp;
     if ((resplen = get_response(server_sock, &resp, 1)) <= 0)
     {
-        consolelog("impossibile ottenere messaggio di benvenuto");
+        consolelog("impossibile ottenere messaggio di benvenuto\n");
         exit(EXIT_FAILURE);
     }
 
     if (resp.code != SRESP_OK)
     {
-        consolelog("il server ha chiuso la connessione: %s", resp.info);
+        consolelog("il server ha chiuso la connessione\n");
         close(server_sock);
         exit(EXIT_SUCCESS);
     }
@@ -73,7 +73,7 @@ int main(int shellargc, char *shellargv[])
     while (1)
     {
         // promtp
-        printf("\n> ");
+       printf("\n> ");
 
         // leggo un comando
         char userinput[1024];
@@ -86,7 +86,7 @@ int main(int shellargc, char *shellargv[])
         // se il comando non è nel formato corretto continuo
         if (nmatches == 0)
         {
-            printf("il formato del comando non è corretto\n");
+            consolelog("il formato del comando non è corretto\n");
             continue;
         }
 
@@ -122,7 +122,7 @@ int main(int shellargc, char *shellargv[])
         
         // comando sconosciuto
         else
-            printf("comando sconosciuto\n");
+            consolelog("comando sconosciuto\n");
 
         // libero le risorse che non servono piu'
         regex_match_free(&matches, nmatches);
@@ -235,7 +235,7 @@ int signup(int sockfd, int argc, char *args[])
 {
     if (argc != 2)
     {
-        printf("numero di parametri errato\n");
+        consolelog("numero di parametri errato\n");
         return 0;
     }
 
@@ -253,7 +253,7 @@ int signup(int sockfd, int argc, char *args[])
         {
             case SRESP_RETRY:
             {
-                printf("\tusername: ");
+                consolelog("\tusername: ");
                 char username[USERNAME_LEN + 1];
                 fgets(username, USERNAME_LEN, stdin);
                 
@@ -276,7 +276,7 @@ int login(int sockfd, int argc, char *args[])
 {
     if (argc != 2)
     {
-        printf("numero di parametri errato\n");
+        consolelog("numero di parametri errato\n");
         return 0;
     }
 
@@ -290,16 +290,16 @@ int login(int sockfd, int argc, char *args[])
     if (resp.code == SRESP_OK && strlen(resp.info) == SESSIONID_LEN)
     {
         strcpy(sessionid, resp.info);
-        printf("login effettuato con successo\n");
+        consolelog("login effettuato con successo\n");
     }
     else if (resp.code == SRESP_CLOSE)
     {
-        printf("il server ha chiuso la connessione\n");
+        consolelog("il server ha chiuso la connessione\n");
         return -1;
     }
     else
     {
-        printf("impossibile effettuare login\n");
+        consolelog("impossibile effettuare login\n");
         echo_response(&resp);
     }    
 
@@ -391,7 +391,7 @@ int invia_giocata(int sockfd, int argc, char *args[])
                 // controllo se i numeri sono già stati tutti inseriti
                 if (got_numeri >= N_DA_GIOCARE)
                 {
-                    printf("numero di numeri da giocare superato");
+                    consolelog("numero di numeri da giocare superato");
                     goto usage;
                 }
 
@@ -411,7 +411,7 @@ int invia_giocata(int sockfd, int argc, char *args[])
                 // controllo se gli importi sono già stati specificati per tutte le scommesse
                 if (got_importi >= N_DA_GIOCARE)
                 {
-                    printf("il numero di numeri supera il numero di tipi di scomesse (estratto, ambo, ..., cinquina)");
+                    consolelog("il numero di numeri supera il numero di tipi di scomesse (estratto, ambo, ..., cinquina)");
                     goto usage;
                 }
 
@@ -434,7 +434,7 @@ int invia_giocata(int sockfd, int argc, char *args[])
     // se ci sono delle sezioni della schedina che risultano non compilate
     if (got_ruote == 0 || got_numeri == 0 || got_importi == 0)
     {
-        printf("parametri mancanti\n");
+        consolelog("parametri mancanti\n");
         goto usage;
     }
 
@@ -469,15 +469,30 @@ int invia_giocata(int sockfd, int argc, char *args[])
 
         // chiudo lo stream
         fclose(sockstream);
+    } 
+    else
+    {
+        // se la risposta non è SRESP_OK
+        return 0;
     }
+
+    consolelog("schedina inviata\n");
+
+    // ricevo l'esito dell'operazione dal server    
+    last_msg_operation = MSGOP_SEND;
+    if (get_response(sockfd, &resp, 1) <= 0)
+        return -1;
+    
+    if (resp.code != SRESP_OK)
+       consolelog("giocata non effettuata");
 
     return 0;
 
 wrongparameter:
-    printf("errore argomento %d: previsto \"%s\", trovato \"%s\"\n", i + 1, expected_str[state], arg);
+    consolelog("errore argomento %d: previsto \"%s\", trovato \"%s\"\n", i + 1, expected_str[state], arg);
     goto usage;
 
 usage:
-    printf("uso: invia_giocata -r <ruota1 ... ruotaN> -n <num1 ... numN> -i <importoEstratto importoAmbo ... importoCinquina>\n");
+    consolelog("uso: invia_giocata -r <ruota1 ... ruotaN> -n <num1 ... numN> -i <importoEstratto importoAmbo ... importoCinquina>\n");
     return 0;
 }
