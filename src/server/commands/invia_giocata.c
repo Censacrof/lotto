@@ -12,27 +12,30 @@ int invia_giocata(int client_sock)
     send_response(client_sock, SRESP_CONTINUE, "pronto a ricevere la schedina");
 
     // ricevo la schedina
+    int msglen;
+    char *msg;
+    if ((msglen = recv_msg(client_sock, &msg)) <= 0)
+    {
+        consolelog("impossibile ricevere la schedina\n");
+        return 0;
+    }
+
+    // deserializzo la schedina
     schedina_t schedina;
 
-    // duplico il file descriptor del socket (necessario per poter chiamare
-    // fclose in seguito senza chiudere la connessione con il server)
-    int fd = dup(client_sock);
-
-    // associo uno stream al file descriptor (duplicato)
-    FILE *sockstream = fdopen(fd, "r");
-
-    last_msg_operation = MSGOP_RECV;
+    // associo uno stream al alla stringa msg
+    FILE *stream = fmemopen(msg, msglen, "r");
     int ret = 0;
-    if (!sockstream)
+    if (!stream)
     {
-        consolelog("impossibile creare stream per la serializzazione della schedina\n");
+        consolelog("impossibile creare stream per la deserializzazione della schedina\n");
         send_response(client_sock, SRESP_ERR, "si e' verificato un errore");
         ret = -1;
         goto end;
     }
 
     // effettuo la deserializzazione della schedina
-    deserializza_schedina(sockstream, &schedina);
+    deserializza_schedina(stream, &schedina);
 
     // salvo la giocata
     if (salva_giocata(session.username, &schedina) == -1)
@@ -47,7 +50,7 @@ int invia_giocata(int client_sock)
 
 end:
     // chiudo lo stream
-    fclose(sockstream);
+    fclose(stream);
 
     return ret;
 }

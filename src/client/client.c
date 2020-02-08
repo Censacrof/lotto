@@ -452,23 +452,28 @@ int invia_giocata(int sockfd, int argc, char *args[])
     // della schedina
     if (resp.code == SRESP_CONTINUE)
     {
-        // duplico il file descriptor del socket (necessario per poter chiamare
-        // fclose in seguito senza chiudere la connessione con il server)
-        int fd = dup(sockfd);
-
-        // associo uno stream al file descriptor (duplicato)
-        FILE *sockstream = fdopen(fd, "w");
-        if (!sockstream)
+        // creo un mem_stream per il messaggio
+        char *msg;
+        size_t msglen;
+        FILE *stream = open_memstream(&msg, &msglen);
+        if (!stream)
         {
             consolelog("impossibile creare stream per la serializzazione della schedina\n");
             return -1;
         }
 
         // effettuo la serializzazione della schedina
-        serializza_schedina(sockstream, &schedina);
+        serializza_schedina(stream, &schedina);
 
         // chiudo lo stream
-        fclose(sockstream);
+        fclose(stream);
+
+        // invio il messaggio
+        if (send_msg(sockfd, msg) <= 0)
+        {
+            consolelog("impossibile inviare schedina\n");
+            return 0;
+        }
     } 
     else
     {
