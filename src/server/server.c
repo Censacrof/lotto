@@ -12,6 +12,7 @@
 #include "commands.h"
 
 void handle_connection(int, const char *client_addr_str, const int port);
+void estrattore(time_t period);
 
 int main(int argc, char *argv[])
 {
@@ -46,7 +47,18 @@ int main(int argc, char *argv[])
             sscanf(argv[2], "%ld", &period);
     }
 
-    sprintf(whoiam, "%d::", getpid());
+    // creo il processo che gestisce le estrazioni
+    pid_t child_pid;
+    if ((child_pid = fork()) == -1)
+    {
+        perror("impossibile creare processo estrattore");
+        exit(EXIT_FAILURE);
+    }
+    else if (child_pid == 0)
+        estrattore(period);
+
+
+    sprintf(whoiam, "%d:LISTENER", getpid());
     consolelog("server avviato\n");
 
     // intializzo il seed di random
@@ -187,4 +199,19 @@ void handle_connection(int client_sock, const char *client_addr_str, const int p
     consolelog("connessione chiusa\n");
     close(client_sock);
     exit(0);
+}
+
+void estrattore(const time_t period)
+{
+    sprintf(whoiam, "%d:ESTRATTORE", getpid());
+    
+    while (1)
+    {
+        sleep(period);
+
+
+        consolelog("estrazione effettuata\n");
+    }
+
+    exit(EXIT_SUCCESS);
 }
