@@ -70,7 +70,7 @@ wrongcredentials:
         blacklist(client_addr_str);
     
     int ret = 0;
-    int code = SRESP_RETRY; 
+    int code = SRESP_ERR; 
     if (tries_left <= 0)
     {
         ret = 1;
