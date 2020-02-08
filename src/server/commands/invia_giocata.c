@@ -34,6 +34,14 @@ int invia_giocata(int client_sock)
     // effettuo la deserializzazione della schedina
     deserializza_schedina(sockstream, &schedina);
 
+    // salvo la giocata
+    if (salva_giocata(session.username, &schedina) == -1)
+    {
+        send_response(client_sock, SRESP_ERR, "impossibile effettuare giocata");
+        ret = 0;
+        goto end;
+    }
+
     // comunico al client che la giocata e' stata registrata
     send_response(client_sock, SRESP_OK, "giocata effettuata");
 

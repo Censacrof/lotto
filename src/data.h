@@ -19,7 +19,7 @@
             ...
             utenteN
         
-        schedine_nuove          -> file di contenente le schedine che devono ancora venir processate
+        schedine_nuove          -> file contenente le schedine che devono ancora venir processate
         blacklist               -> file contenente ip e timestamp degli ip blacklistati
 */
 
@@ -77,6 +77,7 @@ enum {
 
 typedef struct estrazione estrazione_t;
 typedef struct schedina schedina_t;
+typedef struct giocata giocata_t;
 typedef struct utente utente_t;
 
 struct estrazione {
@@ -101,6 +102,18 @@ struct schedina {
     unsigned int ruote_selezionate;
 };
 
+// array contenente le giocate passate
+struct giocata {
+    // vincita in centesimi
+    int vincita;
+
+    // booleano
+    int attiva;
+
+    schedina_t schedina;
+    estrazione_t estrazione;
+};
+
 struct utente {
     char username[USERNAME_LEN + 1];
     char passwordhash[PASSWORDHASH_LEN + 1];
@@ -109,16 +122,7 @@ struct utente {
     int n_giocate;
 
     // array contenente le giocate passate
-    struct {
-        // vincita in centesimi
-        int vincita;
-
-        // booleano
-        int attiva;
-
-        schedina_t schedina;
-        estrazione_t estrazione;
-    } *giocate;
+    giocata_t *giocate;
 };
 
 
@@ -144,6 +148,7 @@ int deserializza_estrazione(FILE *stream, estrazione_t *estrazione);
 int utente_exists(const char *username);
 int salva_utente(const utente_t *utente);
 int carica_utente(const char *username, utente_t *utente);
+int salva_giocata(const char *username, const schedina_t *schedina);
 
 int blacklist(const char *ip);
 int is_blacklisted(const char *ip, time_t *timeleft);

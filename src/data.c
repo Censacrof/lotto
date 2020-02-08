@@ -359,7 +359,7 @@ int deserializza_utente(FILE *stream, utente_t *utente)
 
     // calloc è come malloc ma riempie di zeri la memoria allocata
     // (mi serve per poter confrontare le struture dati con memcmp)
-    utente->giocate = calloc(sizeof(*utente->giocate) * utente->n_giocate, 1);
+    utente->giocate = calloc(sizeof(giocata_t) * utente->n_giocate, 1);
 
     int i;
     for (i = 0; i < utente->n_giocate; i++)
@@ -441,6 +441,44 @@ int carica_utente(const char *username, utente_t *utente)
     return 0;
 }
 
+int salva_giocata(const char *username, const schedina_t *schedina)
+{
+    // carico l'utente
+    utente_t utente;
+    if (carica_utente(username, &utente) == -1)
+        return -1;
+    
+    // aggiungo la giocata all'utente
+    utente.giocate = realloc(utente.n_giocate == 0 ? NULL : utente.giocate, sizeof(giocata_t) * (utente.n_giocate + 1));
+    utente.giocate[utente.n_giocate].attiva = 1;
+    memcpy(&utente.giocate[utente.n_giocate].schedina, schedina, sizeof(schedina_t));
+
+    // campi significativo solo quando la giocata non è attiva
+    memset(&utente.giocate[utente.n_giocate].estrazione, 0, sizeof(estrazione_t));
+    utente.giocate[utente.n_giocate].vincita = 0;
+
+    // incremento il contatore delle giocate
+    utente.n_giocate++;
+
+    // salvo l'utente
+    if (salva_utente(&utente) == -1)
+        return -1;
+
+    // inserisco la giocata nel file delle schedine nuove (lo creo se non esiste)
+    FILE *stream = fopen(PATH_SCHEDINE_NUOVE, "a");
+    if (!stream)
+        return -1;
+    
+    // scrivo l'username seguito dalla schedina
+    fprintf(stream, "%s\n", username);
+    serializza_schedina(stream, schedina);
+    fprintf(stream, "\n"); // per leggibilità
+
+    // chiudo il file
+    fclose(stream);
+
+    return 0;
+}
 
 // ------------------------- blacklist ------------------------
 // aggiunge ip alla blacklist se non è già presente al suo interno
