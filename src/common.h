@@ -10,14 +10,14 @@ enum server_response {
     // la richiesta è andata a buon fine
     SRESP_OK,
 
+    // si è verificato un errore durante l'esecuzione della richiesta
+    SRESP_ERR,
+
     // il server chiede di rientare l'invio di dati
     SRESP_RETRY,
 
     // il server chiede di continuare l'invio di dati
     SRESP_CONTINUE,
-
-    // si è verificato un errore durante l'esecuzione della richiesta
-    SRESP_ERR,
 
     // la richiesta non era valida
     SRESP_BADREQ,
@@ -28,6 +28,8 @@ enum server_response {
     // usato solo per contare il numero di elementi dentro l'enum
     SRESP_NUM
 };
+
+extern const char server_response_str[SRESP_NUM][16];
 
 extern char whoiam[70];
 void die(const char *msg);

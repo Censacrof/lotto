@@ -88,7 +88,7 @@ int execute_command(int client_sock, char *msg, const char *client_addr_str)
     else if (strcmp(session_id, session.id) != 0 || strlen(session_id) != SESSIONID_LEN)
     {
         if (session_id[0] == '\0')
-            send_response(client_sock, SRESP_BADREQ, "è necessario fornire un sessionid");
+            send_response(client_sock, SRESP_BADREQ, "è necessario fornire un sessionid (effettuare login)");
         else
             send_response(client_sock, SRESP_BADREQ, "comando sconosciuto");
         
@@ -141,6 +141,6 @@ int send_response(int client_sock, enum server_response code, char *info)
         return -1;
     }
 
-    consolelog("rispondo: %s\n", buff);
+    consolelog("rispondo [%s]: %s\n", server_response_str[code], info);
     return 0;
 }

@@ -10,6 +10,17 @@
 
 #include "common.h"
 
+
+const char server_response_str[SRESP_NUM][16] = {
+    [SRESP_OK] = "OK",
+    [SRESP_RETRY] = "RETRY",
+    [SRESP_CONTINUE] = "CONTINUE",
+    [SRESP_ERR] = "ERROR",
+    [SRESP_BADREQ] = "BADREQ",
+    [SRESP_CLOSE] = "CLOSE"
+};
+
+
 char whoiam[70] = "";
 void die(const char *msg)
 {
