@@ -31,6 +31,35 @@ int esci(int sockfd);
 
 int main(int shellargc, char *shellargv[])
 {
+    // parametri
+    if (shellargc != 3)
+    {
+    usage:
+        printf("uso: %s <IP server> <porta server>\n", shellargv[0]);
+        exit(EXIT_SUCCESS);
+    }
+    
+    // estraggo la porta
+    int port;
+    if (regex_match("^[0-9]+$", shellargv[2], NULL) == 0)
+    {
+        printf("formato porta non valido\n");
+        goto usage;
+    }
+    else
+        sscanf(shellargv[2], "%d", &port);
+
+    // creo l'indirizzo del server
+    struct sockaddr_in server_addr;
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(port);
+    if (inet_pton(AF_INET, shellargv[1], &server_addr.sin_addr) == 0)
+    {
+        printf("formato IP non valido\n");
+        goto usage;
+    }
+
     // creo il socket di comunicazione
     int server_sock;
     if ((server_sock = socket(
@@ -39,16 +68,6 @@ int main(int shellargc, char *shellargv[])
         0
     )) == -1)
         die("impossibile creare un socket");
-    
-    int port;
-    sscanf(DEFAULT_SERVER_PORT, "%d", &port);
-    
-    // creo l'indirizzo del server
-    struct sockaddr_in server_addr;
-    memset(&server_addr, 0, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(port);
-    inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr);
 
     // creo la connessione
     if (connect(server_sock, (struct sockaddr *) &server_addr, sizeof(server_addr)) == -1)
