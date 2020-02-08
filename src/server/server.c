@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
             strftime(buff_timeleft, 16, "%H:%M:%S", gmtime(&timeleft));
 
             sprintf(buff_resp, "questo indirizzo (%s) risulta bannato a causa dei numerosi tentativi di login falliti. riprovare tra %s", client_addr_str, buff_timeleft);
-            send_response(client_sock, SRESP_ERR, buff_resp);
+            send_response(client_sock, SRESP_CLOSE, buff_resp);
 
             // chiudo la connessione e ricomincio il ciclo di accettazione
             close(client_sock);
