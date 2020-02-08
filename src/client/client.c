@@ -27,6 +27,7 @@ int get_response(int sockfd, struct response *resp, int echo);
 int signup(int sockfd, int argc, char *args[]);
 int login(int sockfd, int argc, char *args[]);
 int invia_giocata(int sockfd, int argc, char *args[]);
+int esci(int sockfd);
 
 int main(int shellargc, char *shellargv[])
 {
@@ -119,6 +120,9 @@ int main(int shellargc, char *shellargv[])
         
         else if (strcmp(command, "invia_giocata") == 0)
             ret = invia_giocata(server_sock, nargs, args);
+        
+        else if (strcmp(command, "esci") == 0)
+            ret = esci(server_sock);
         
         // comando sconosciuto
         else
@@ -500,4 +504,16 @@ wrongparameter:
 usage:
     consolelog("uso: invia_giocata -r <ruota1 ... ruotaN> -n <num1 ... numN> -i <importoEstratto importoAmbo ... importoCinquina>\n");
     return 0;
+}
+
+
+int esci(int sockfd)
+{
+    char *dummy_args = "";
+    send_command(sockfd, "esci", 0, (char **) dummy_args);
+
+    struct response resp;
+    get_response(sockfd, &resp, 1);
+    
+    return -1;
 }

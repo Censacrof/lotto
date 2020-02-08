@@ -100,6 +100,10 @@ int execute_command(int client_sock, char *msg, const char *client_addr_str)
     {
         ret = invia_giocata(client_sock);
     }
+    else if (strcmp(command, "esci") == 0)
+    {
+        ret = esci(client_sock);
+    }
 
     // comando sconosciuto
     else
