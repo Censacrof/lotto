@@ -40,10 +40,6 @@ int inizializza_directories()
     if (mkdir(PATH_UTENTI, mode) == -1)
         if (errno != EEXIST)
             return -1;
-    
-    if (mkdir(PATH_ESTRAZIONI, mode) == -1)
-        if (errno != EEXIST)
-            return -1;
 
     return 0;
 }

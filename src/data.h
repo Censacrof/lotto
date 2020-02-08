@@ -7,25 +7,20 @@
 
 /*  STRUTTURA DELLE DIRECTORY
     /data
-        /estrazioni             -> contiene le estrazioni passate
-            estrazione1
-            estrazione2
-            ...
-            estrazioneN
-
         /utenti                 -> contiene gli utenti
             utente1
             utente2
             ...
             utenteN
 
+        estrazioni              -> contiene le estrazioni passate
         blacklist               -> file contenente ip e timestamp degli ip blacklistati
 */
 
 // percorsi
 #define PATH_DATA "data/"
-#define PATH_ESTRAZIONI PATH_DATA "estrazioni/"
 #define PATH_UTENTI PATH_DATA "utenti/"
+#define PATH_ESTRAZIONI PATH_DATA "estrazioni"
 #define PATH_BLACKLIST PATH_DATA "blacklist"
 
 // costanti
