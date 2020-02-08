@@ -126,8 +126,8 @@ int main(int argc, char *argv[])
     utente.giocate = calloc(sizeof(*utente.giocate) * utente.n_giocate, 1);
     for (int i = 0; i < utente.n_giocate; i++)
     {
-        utente.giocate[i].vincita = rand() % 1000;
-        utente.giocate[i].vincita = rand() % 2;
+        for (int j = 0; j < N_TIPI_SCOMMESSE; j++)
+            utente.giocate[i].vincita[j] = rand() % 1000;
 
         for (int j = 0; j < N_DA_GIOCARE; j++)
             utente.giocate[i].schedina.numeri[j] = rand() % 90;

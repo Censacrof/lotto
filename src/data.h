@@ -104,8 +104,8 @@ struct schedina {
 
 // array contenente le giocate passate
 struct giocata {
-    // vincita in centesimi
-    int vincita;
+    // vincita in centesimi per ogni tipo di scommessa
+    int vincita[N_TIPI_SCOMMESSE];
 
     // booleano
     int attiva;

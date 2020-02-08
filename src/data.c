@@ -330,7 +330,11 @@ int serializza_utente(FILE *stream, const utente_t *utente)
     int i;
     for (i = 0; i < utente->n_giocate; i++)
     {
-        serializza_int(stream,  utente->giocate[i].vincita, 0);
+        int j;
+        for (j = 0; j < N_TIPI_SCOMMESSE; j++)
+            serializza_int(stream,  utente->giocate[i].vincita[j], 1);
+        fprintf(stream, "\n");
+
         serializza_int(stream,  utente->giocate[i].attiva, 0);
 
         serializza_schedina(stream, &utente->giocate[i].schedina);
@@ -364,8 +368,12 @@ int deserializza_utente(FILE *stream, utente_t *utente)
     int i;
     for (i = 0; i < utente->n_giocate; i++)
     {
-        deserializza_int(stream, &bigint);
-        utente->giocate[i].vincita = bigint;
+        int j;
+        for (j = 0; j < N_TIPI_SCOMMESSE; j++)
+        {
+            deserializza_int(stream, &bigint);
+            utente->giocate[i].vincita[j] = bigint;
+        }
 
         deserializza_int(stream, &bigint);
         utente->giocate[i].attiva = bigint;
@@ -455,7 +463,7 @@ int salva_giocata(const char *username, const schedina_t *schedina)
 
     // campi significativo solo quando la giocata non è attiva
     memset(&utente.giocate[utente.n_giocate].estrazione, 0, sizeof(estrazione_t));
-    utente.giocate[utente.n_giocate].vincita = 0;
+    memset(&utente.giocate[utente.n_giocate].vincita, 0, sizeof(int) * N_TIPI_SCOMMESSE);
 
     // incremento il contatore delle giocate
     utente.n_giocate++;
