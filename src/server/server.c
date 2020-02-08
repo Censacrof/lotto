@@ -15,6 +15,37 @@ void handle_connection(int, const char *client_addr_str, const int port);
 
 int main(int argc, char *argv[])
 {
+    // parametri
+    if (argc < 2 || argc > 3)
+    {
+    usage:
+        printf("uso: %s <porta> <periodo in secondi>\n", argv[0]);
+        exit(EXIT_SUCCESS);
+    }        
+    
+    // estraggo la porta
+    int port;
+    if (regex_match("^[0-9]+$", argv[1], NULL) == 0)
+    {
+        printf("formato porta non valido\n");
+        goto usage;
+    }
+    else
+        sscanf(argv[1], "%d", &port);
+
+    // estraggo il periodo
+    time_t period = 60 * 5; // 5 minuti di default
+    if (argc == 3)
+    {
+        if (regex_match("^[0-9]+$", argv[2], NULL) == 0)
+        {
+            printf("formato periodo non valido\n");
+            goto usage;
+        }
+        else
+            sscanf(argv[2], "%ld", &period);
+    }
+
     sprintf(whoiam, "%d::", getpid());
     consolelog("server avviato\n");
 
@@ -29,9 +60,6 @@ int main(int argc, char *argv[])
         0
     )) == -1)
         die("impossibile creare un socket");
-    
-    int port;
-    sscanf(DEFAULT_SERVER_PORT, "%d", &port);
 
     // creo l'indirizzo del server
     struct sockaddr_in server_addr;
