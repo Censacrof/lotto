@@ -18,8 +18,7 @@
             utente2
             ...
             utenteN
-        
-        schedine_nuove          -> file contenente le schedine che devono ancora venir processate
+
         blacklist               -> file contenente ip e timestamp degli ip blacklistati
 */
 
@@ -27,7 +26,6 @@
 #define PATH_DATA "data/"
 #define PATH_ESTRAZIONI PATH_DATA "estrazioni/"
 #define PATH_UTENTI PATH_DATA "utenti/"
-#define PATH_SCHEDINE_NUOVE PATH_DATA "schedine_nuove"
 #define PATH_BLACKLIST PATH_DATA "blacklist"
 
 // costanti

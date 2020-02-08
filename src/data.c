@@ -472,19 +472,6 @@ int salva_giocata(const char *username, const schedina_t *schedina)
     if (salva_utente(&utente) == -1)
         return -1;
 
-    // inserisco la giocata nel file delle schedine nuove (lo creo se non esiste)
-    FILE *stream = fopen(PATH_SCHEDINE_NUOVE, "a");
-    if (!stream)
-        return -1;
-    
-    // scrivo l'username seguito dalla schedina
-    fprintf(stream, "%s\n", username);
-    serializza_schedina(stream, schedina);
-    fprintf(stream, "\n"); // per leggibilità
-
-    // chiudo il file
-    fclose(stream);
-
     return 0;
 }
 
