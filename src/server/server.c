@@ -257,7 +257,7 @@ void estrattore(const time_t period)
 
         estrazione.timestamp = time(NULL);
 
-        srand(0); // DEBUG
+        // srand(0); // DEBUG
         for (int i = 0; i < N_RUOTE; i++)
         {
             // creo un alias per la ruota corrente
@@ -376,7 +376,7 @@ void estrattore(const time_t period)
                     // sommo la vincita relativa ad ogni ruota selezionata k per questo tipo di scommessa j
                     for (int k = 0; k < n_ruote_selezionate; k++)
                     {
-                        vincita[j] += importi_scommesse[j] * (vincite_lorde[j] / binomialcoeff(n_numeri_giocati, j + 1)) / n_ruote_selezionate;
+                        vincita[j] += importi_scommesse[j] * (vincite_lorde[j] / binomialcoeff(n_numeri_giocati, n_numeri_indovinati[k])) / n_ruote_selezionate;
                     }
                 }
             }
