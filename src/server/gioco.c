@@ -31,7 +31,7 @@ void estrattore(const time_t period)
 
         estrazione.timestamp = time(NULL);
 
-        srand(0); // DEBUG
+        // srand(0); // DEBUG
         for (int i = 0; i < N_RUOTE; i++)
         {
             // creo un alias per la ruota corrente
