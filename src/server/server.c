@@ -376,6 +376,10 @@ void estrattore(const time_t period)
                     // sommo la vincita relativa ad ogni ruota selezionata k per questo tipo di scommessa j
                     for (int k = 0; k < n_ruote_selezionate; k++)
                     {
+                        // se il numero di numeri indovinati su questa ruota è minore dei numeri richiesti da indovinare per questo tipo di scommessa
+                        if (n_numeri_indovinati[k] <= j)
+                            continue;
+
                         vincita[j] += importi_scommesse[j] * (vincite_lorde[j] / binomialcoeff(n_numeri_giocati, n_numeri_indovinati[k])) / n_ruote_selezionate;
                     }
                 }
