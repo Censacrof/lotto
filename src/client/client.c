@@ -426,6 +426,16 @@ int invia_giocata(int sockfd, int argc, char *args[])
                 int n;
                 if (!numero_da_giocare_valido(arg, &n))
                     goto wrongparameter;
+
+                // controllo se il numero è già stato inserito nella schedina
+                for (int j = 0; j < got_numeri; j++)
+                {
+                    if (schedina.numeri[j] == n)
+                    {
+                        consolelog("il numero %d è stato inserito più volte nella schedina\n", n);
+                        goto usage;
+                    }
+                }
                 
                 // il parametro è valido quindi lo inserisco nella schedina
                 schedina.numeri[got_numeri] = n;
