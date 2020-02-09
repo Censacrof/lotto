@@ -471,6 +471,22 @@ int salva_giocata(const char *username, const schedina_t *schedina)
     return 0;
 }
 
+// ------------------------- estrazione ------------------------
+int salva_estrazione(const estrazione_t *estrazione)
+{
+    // apro il file delle estrazioni in modalità append
+    FILE *stream = fopen(PATH_ESTRAZIONI, "a");
+    if (!stream)
+        return -1;
+    
+    if (serializza_estrazione(stream, estrazione) == -1)
+        return -1;
+    fprintf(stream, "\n"); // per leggibilità
+
+    fclose(stream);
+    return 0;
+}
+
 // ------------------------- blacklist ------------------------
 // aggiunge ip alla blacklist se non è già presente al suo interno
 int blacklist(const char *ip)

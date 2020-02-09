@@ -118,6 +118,7 @@ struct utente {
     giocata_t *giocate;
 };
 
+int inizializza_directories();
 
 // funzioni booleane per controllare la validità dei dati ed evntualmente convertirli
 int numero_da_giocare_valido(const char *numstr, int *num);
@@ -142,6 +143,8 @@ int utente_exists(const char *username);
 int salva_utente(const utente_t *utente);
 int carica_utente(const char *username, utente_t *utente);
 int salva_giocata(const char *username, const schedina_t *schedina);
+
+int salva_estrazione(const estrazione_t *estrazione);
 
 int blacklist(const char *ip);
 int is_blacklisted(const char *ip, time_t *timeleft);
