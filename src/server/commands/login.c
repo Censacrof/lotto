@@ -13,9 +13,9 @@
 int tries_left = N_LOGINTRIES;
 
 // !login username password
-int login(int client_sock, const char *client_addr_str, int nargs, char *args[])
+int login(int client_sock, const char *client_addr_str, int argc, char *args[])
 {
-    if (nargs != 2)
+    if (argc != 2)
     {
         send_response(client_sock, SRESP_BADREQ, "numero di parametri errato");
         return 0;
