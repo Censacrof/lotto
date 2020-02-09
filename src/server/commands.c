@@ -76,13 +76,10 @@ int execute_command(int client_sock, char *msg, const char *client_addr_str)
     // in base al comando eseguo la funzione ad esso associata
     // comanindi che non richiedono un sessionid
     if (strcmp(command, "signup") == 0)
-    {
         ret = signup(client_sock, nargs, args);
-    }
+
     else if (strcmp(command, "login") == 0)
-    {
         ret = login(client_sock, client_addr_str, nargs, args);
-    }
 
     // controllo il sessionid
     else if (strcmp(session_id, session.id) != 0 || strlen(session_id) != SESSIONID_LEN)
@@ -97,21 +94,16 @@ int execute_command(int client_sock, char *msg, const char *client_addr_str)
 
     // comandi che richiedono un sessionid
     else if (strcmp(command, "invia_giocata") == 0)
-    {
         ret = invia_giocata(client_sock);
-    }
+
     else if (strcmp(command, "vedi_giocate") == 0)
-    {
         ret = vedi_giocate(client_sock, nargs, args);
-    }
+
     else if (strcmp(command, "vedi_estrazione") == 0)
-    {
         ret = vedi_estrazione(client_sock, nargs, args);
-    }
+
     else if (strcmp(command, "esci") == 0)
-    {
         ret = esci(client_sock);
-    }
 
     // comando sconosciuto
     else
