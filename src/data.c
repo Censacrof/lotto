@@ -28,6 +28,9 @@ const char ruote_str[N_RUOTE][16] = {
 // lista degli importi che è possibile puntare (in centesimi)
 const int importi_possibili[] = { 0, 5, 10, 20, 50, 100, 200, 300, 500, 1000, 2000, 5000, 10000, 20000 };
 
+// array contenente il nome dei tipi di scommesse
+const char tipi_scommesse_str[N_TIPI_SCOMMESSE][16] = { "estratto", "ambo", "terno", "quaterna", "cinquina" };
+
 // crea le cartelle necessarie se non sono già presenti
 int inizializza_directories()
 {

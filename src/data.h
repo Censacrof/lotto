@@ -84,6 +84,9 @@ struct estrazione {
 // lista degli importi che è possibile puntare (in centesimi)
 extern const int importi_possibili[];
 
+// array contenente il nome dei tipi di scommesse
+extern const char tipi_scommesse_str[N_TIPI_SCOMMESSE][16];
+
 struct schedina {
     // array contenente i numeri da giocare
     int numeri[N_DA_GIOCARE];
