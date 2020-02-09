@@ -495,8 +495,11 @@ int invia_giocata(int sockfd, int argc, char *args[])
         if (send_msg(sockfd, msg) <= 0)
         {
             consolelog("impossibile inviare schedina\n");
+            free(msg);
             return 0;
         }
+
+        free(msg);
     } 
     else
     {

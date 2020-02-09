@@ -51,6 +51,7 @@ int invia_giocata(int client_sock)
 end:
     // chiudo lo stream
     fclose(stream);
+    free(msg);
 
     return ret;
 }
