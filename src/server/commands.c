@@ -104,6 +104,10 @@ int execute_command(int client_sock, char *msg, const char *client_addr_str)
     {
         ret = vedi_giocate(client_sock, nargs, args);
     }
+    else if (strcmp(command, "vedi_estrazione") == 0)
+    {
+        ret = vedi_estrazione(client_sock, nargs, args);
+    }
     else if (strcmp(command, "esci") == 0)
     {
         ret = esci(client_sock);

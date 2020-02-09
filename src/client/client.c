@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <time.h>
 
 #include "../common.h"
 #include "../data.h"
@@ -28,6 +29,7 @@ int signup(int sockfd, int argc, char *args[]);
 int login(int sockfd, int argc, char *args[]);
 int invia_giocata(int sockfd, int argc, char *args[]);
 int vedi_giocate(int sockfd, int argc, char *args[]);
+int vedi_estrazione(int sockfd, int argc, char *args[]);
 int esci(int sockfd);
 
 int main(int shellargc, char *shellargv[])
@@ -143,6 +145,9 @@ int main(int shellargc, char *shellargv[])
         
         else if (strcmp(command, "vedi_giocate") == 0)
             ret = vedi_giocate(server_sock, nargs, args);
+
+        else if (strcmp(command, "vedi_estrazione") == 0)
+            ret = vedi_estrazione(server_sock, nargs, args);
         
         else if (strcmp(command, "esci") == 0)
             ret = esci(server_sock);
@@ -585,7 +590,7 @@ int vedi_giocate(int sockfd, int argc, char *args[])
     // apro il messaggio come uno stream
     FILE *stream = fmemopen(msg, msglen, "r");
 
-    // leggo il numero di schedine da leggere dallo stream e alloco un'array di schedine
+    // leggo il numero di schedine da leggere dallo stream
     long long int ndaleggere;
     deserializza_int(stream, &ndaleggere);
 
@@ -632,6 +637,147 @@ int vedi_giocate(int sockfd, int argc, char *args[])
 
 usage:
     consolelog("uso: vedi_giocate <tipo>\n");
+    return 0;
+}
+
+int vedi_estrazione(int sockfd, int argc, char *args[])
+{
+    if (argc != 1 && argc != 2)
+    {
+        consolelog("numero di parametri errato\n");
+        goto usage;
+    }
+
+    // controllo n
+    int n;
+    if (regex_match("^[0-9]+$", args[0], NULL) == 0)
+    {
+    nonvalidn:
+        consolelog("n deve essere un numero positivo tra 1 e 20\n");
+        goto usage;
+    }
+
+    // estraggo n
+    sscanf(args[0], "%d", &n);
+    if (n < 1 || n > 20)
+        goto nonvalidn;
+
+    // se è specificata ricavo l' indice corrispondente alla ruota
+    int indiceruota;
+    if (argc == 2)
+    {
+        // controllo se la ruota specificata è valida
+        int trovata = 0;
+        for (int i = 0; i < N_RUOTE; i++)
+        {
+            if (strcmp(args[1], ruote_str[i]) == 0)
+            {
+                trovata = 1;
+                indiceruota = 0;
+                break;
+            }
+        }
+
+        if (!trovata)
+        {
+            consolelog("la ruota specificata non è valida\n");
+            goto usage;
+        }
+    }
+
+    // invio il comando al server
+    if (send_command(sockfd, "vedi_estrazione", argc, args) == -1)
+        return -1;
+    
+    // ricevo la risposta
+    struct response resp;
+    if (get_response(sockfd, &resp, 0) == -1)
+        return -1;
+    
+    // se il server non da l'ok esco
+    if (resp.code != SRESP_OK)
+    {
+        echo_response(&resp);
+        return 0;
+    }
+    
+    // ricevo il messaggio contenente tutte le estrazioni richieste
+    char *msg;
+    int msglen;
+    last_msg_operation = MSGOP_NONE;
+    if ((msglen = recv_msg(sockfd, &msg)) <= 0)
+    {
+        consolelog("impossibile ricevere le estrazioni\n");
+        return 0;
+    }
+
+    // apro il messaggio come uno stream
+    FILE *stream = fmemopen(msg, msglen, "r");
+
+    // leggo il numero di estrazioni da leggere dallo stream e alloco un'array di schedine
+    long long int ndaleggere;
+    deserializza_int(stream, &ndaleggere);
+
+    // per ogni estrazione ricevuta stampo le informazioni
+    for (int i = 0; i < ndaleggere; i++)
+    {
+        // se la ruota è specificata
+        if (argc == 2)
+        {
+            // leggo il timestamp
+            long long int bigint;
+            deserializza_int(stream, &bigint);
+
+            // converto il timestamp in stringa
+            char datebuff[64] = "";
+            strftime(datebuff, 64, "%d/%m/%Y - %H:%M:%S", localtime((time_t *) &bigint));
+
+            printf("\n***************************************\n-------- %s --------\n***************************************\n%12s\t", datebuff, ruote_str[indiceruota]);
+
+            for (int j = 0; j < N_DA_ESTRARRE; j++)
+            {
+                deserializza_int(stream, &bigint);
+                printf("  %2d", (int) bigint);
+            }
+        }
+
+        // se la ruota non è specificata stampo tutte le ruote
+        else
+        {
+            estrazione_t estrazione;
+            deserializza_estrazione(stream, &estrazione);
+
+            // converto il timestamp in stringa
+            char datebuff[64] = "";
+            strftime(datebuff, 64, "%d/%m/%Y - %H:%M:%S", localtime(&estrazione.timestamp));
+
+            printf("\n***************************************\n-------- %s --------\n***************************************\n", datebuff);
+
+            for (int j = 0; j < N_RUOTE; j++)
+            {
+                // stampo il nome della ruota
+                printf("%12s\t", ruote_str[j]);
+
+                for (int k = 0; k < N_DA_ESTRARRE; k++)
+                {
+                    printf("%2d  ", estrazione.ruote[j][k]);
+                }
+
+                printf("\n");
+            }
+        }
+
+        printf("\n");
+    }
+
+    // chiudo stream e libero msg
+    fclose(stream);
+    free(msg);
+
+    return 0;
+
+usage:
+    consolelog("uso: vedi_estrazione <n> <ruota>\n");
     return 0;
 }
 
