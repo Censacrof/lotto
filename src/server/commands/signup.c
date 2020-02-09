@@ -27,7 +27,7 @@ int signup(int client_sock, int nargs, char *args[])
         // controllo se l'username è valido
         int nmatches;
         char **matches;
-        if ((nmatches = regex_match("^[ \\n\\r\\t]*(" USERNAME_REGEX_WITHOUT_ANCHORS ")[ \\n\\r\\t]*$", args[0], &matches)) != 2)
+        if ((nmatches = regex_match("^[ \n\r\t]*(" USERNAME_REGEX_WITHOUT_ANCHORS ")[ \n\r\t]*$", args[0], &matches)) != 2)
             goto nonvalidusername;
         
         // sostituisco in args[0] la versione "estratta" dell'username (senza spazi all'inizio o alla fine)

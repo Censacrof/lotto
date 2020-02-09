@@ -230,7 +230,7 @@ int get_response(int sockfd, struct response *resp, int echo)
 
     // eseguo la regex adeguata sulla risposta del sever
     char **matches;
-    int nmatches = regex_match("^([0-9]+)([ \\n\\r\\t]+(.*))?", resptxt, &matches);
+    int nmatches = regex_match("^([0-9]+)([ \n\r\t]+(.*))?", resptxt, &matches);
     free(resptxt);
 
     // se il formato della risposta non è quello aspettato
