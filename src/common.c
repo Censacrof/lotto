@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -7,6 +8,7 @@
 #include <regex.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <signal.h>
 
 #include "common.h"
 
@@ -27,6 +29,11 @@ void die(const char *msg)
     char buff[256];
     sprintf(buff, "%s -> %s", whoiam, msg);
     perror(buff);
+    
+    // mando il segnale SIGTERM al processo corrente e tutti i processi figlio
+    signal(SIGTERM, SIG_IGN);
+    kill(-getpid(), SIGTERM);
+
     exit(EXIT_FAILURE);
 }
 
