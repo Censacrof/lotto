@@ -27,6 +27,7 @@ int get_response(int sockfd, struct response *resp, int echo);
 int signup(int sockfd, int argc, char *args[]);
 int login(int sockfd, int argc, char *args[]);
 int invia_giocata(int sockfd, int argc, char *args[]);
+int vedi_giocate(int sockfd, int argc, char *args[]);
 int esci(int sockfd);
 
 int main(int shellargc, char *shellargv[])
@@ -139,6 +140,9 @@ int main(int shellargc, char *shellargv[])
         
         else if (strcmp(command, "invia_giocata") == 0)
             ret = invia_giocata(server_sock, nargs, args);
+        
+        else if (strcmp(command, "vedi_giocate") == 0)
+            ret = vedi_giocate(server_sock, nargs, args);
         
         else if (strcmp(command, "esci") == 0)
             ret = esci(server_sock);
@@ -528,6 +532,98 @@ usage:
     return 0;
 }
 
+int vedi_giocate(int sockfd, int argc, char *args[])
+{
+    if (argc != 1)
+    {
+        consolelog("numero di parametri errato\n");
+        goto usage;
+    }
+
+    if (strcmp(args[0], "0") != 0 && strcmp(args[0], "1") != 0)
+    {
+        consolelog("tipo errato (0 = non attive, 1 = attive)\n");
+        goto usage;
+    }
+
+    // invio il comando al server
+    if (send_command(sockfd, "vedi_giocate", argc, args) == -1)
+        return -1;
+    
+    // ricevo la risposta
+    struct response resp;
+    if (get_response(sockfd, &resp, 0) == -1)
+        return -1;
+    
+    // se il server non da l'ok esco
+    if (resp.code != SRESP_OK)
+    {
+        echo_response(&resp);
+        return 0;
+    }
+    
+    // ricevo il messaggio contenente tutte le schedine richieste
+    char *msg;
+    int msglen;
+    last_msg_operation = MSGOP_NONE;
+    if ((msglen = recv_msg(sockfd, &msg)) <= 0)
+    {
+        consolelog("impossibile ricevere le giocate\n");
+        return 0;
+    }
+
+    // apro il messaggio come uno stream
+    FILE *stream = fmemopen(msg, msglen, "r");
+
+    // leggo il numero di schedine da leggere dallo stream e alloco un'array di schedine
+    long long int ndaleggere;
+    deserializza_int(stream, &ndaleggere);
+
+    // per ogni schedina ricevuta stampo le informazioni
+    for (int i = 0; i < ndaleggere; i++)
+    {
+        schedina_t schedina;
+        deserializza_schedina(stream, &schedina);
+
+        printf("%d) ", i + 1);
+
+        // stampo le ruote selezionate
+        for (int j = 0; j < N_RUOTE; j++)
+        {
+            unsigned int mask = 1u << j;
+            if (schedina.ruote_selezionate & mask)
+                printf("%s ", ruote_str[j]);
+        }
+
+        // stampo i numeri giocati
+        for (int j = 0; j < N_DA_GIOCARE; j++)
+            if (schedina.numeri[j] != 0)
+                printf("%d ", schedina.numeri[j]);
+        
+        // stampo gli importi per ogni tipo di scommessa
+        for (int j = 0; j < N_TIPI_SCOMMESSE; j++)
+        {
+            if (schedina.importi_scommesse[j] != 0)
+            {
+                // conversione da centesimi a euro
+                float importo = ((float) schedina.importi_scommesse[j]) / 100.0f;
+                printf("* %s %.2f ", tipi_scommesse_str[j], importo);
+            }
+        }
+
+        printf("\n");
+    }
+
+    // chiudo sream e libero msg
+    fclose(stream);
+    free(msg);
+
+    return 0;
+
+usage:
+    consolelog("uso: vedi_giocate <tipo>\n");
+    return 0;
+}
 
 int esci(int sockfd)
 {
