@@ -58,6 +58,6 @@ dkms.conf
 # Binaries and stuff
 build/
 bin/
-lotto-client
-lotto-server
+lotto_client
+lotto_server
 data/

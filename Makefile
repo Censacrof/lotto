@@ -18,12 +18,18 @@ BIN_SERVER:=$(patsubst $(SRC_DIR)/%, $(BIN_DIR)/%, $(SRC_SERVER:.c=.o))
 BIN_TEST:=$(patsubst $(TEST_DIR)/%, $(BIN_DIR)/test/%, $(SRC_TEST:.c=))
 
 .PHONY: all	# all non è un file
-all: lotto-client lotto-server
+all: client server
 
-lotto-client: $(BIN_CLIENT)
+.PHONY: client	# client non è un file
+client: lotto_client
+
+.PHONY: server	# server non è un file
+server: lotto_server
+
+lotto_client: $(BIN_CLIENT)
 	$(CC) $(CFLAGS) $^ -o $@ $(LINK_CLIENT)
 
-lotto-server: $(BIN_SERVER)
+lotto_server: $(BIN_SERVER)
 	$(CC) $(CFLAGS) $^ -o $@ $(LINK_SERVER)
 
 # per ogni file .c contenuto in src/ aggiungo una ricetta per compilarlo
@@ -33,7 +39,7 @@ $(BIN_DIR)/%.o: $(SRC_DIR)/%.c
 
 .PHONY: clean # clean non è un file
 clean:
-	rm -rf *.o $(BIN_DIR) lotto-client lotto-server
+	rm -rf *.o $(BIN_DIR) lotto_client lotto_server
 
 .PHONY: clean-data
 clean-data:
