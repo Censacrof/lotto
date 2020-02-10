@@ -35,6 +35,7 @@ int login(int client_sock, const char *client_addr_str, int argc, char *args[]);
 int invia_giocata(int client_sock);
 int vedi_giocate(int client_sock, int argc, char *args[]);
 int vedi_estrazione(int client_sock, int argc, char *args[]);
+int vedi_vincite(int client_sock);
 int esci(int client_sock);
 
 #endif

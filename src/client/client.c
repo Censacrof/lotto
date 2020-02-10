@@ -30,6 +30,7 @@ int login(int sockfd, int argc, char *args[]);
 int invia_giocata(int sockfd, int argc, char *args[]);
 int vedi_giocate(int sockfd, int argc, char *args[]);
 int vedi_estrazione(int sockfd, int argc, char *args[]);
+int vedi_vincite(int sockfd);
 int esci(int sockfd);
 
 int main(int shellargc, char *shellargv[])
@@ -149,6 +150,9 @@ int main(int shellargc, char *shellargv[])
         else if (strcmp(command, "vedi_estrazione") == 0)
             ret = vedi_estrazione(server_sock, nargs, args);
         
+        else if (strcmp(command, "vedi_vincite") == 0)
+            ret = vedi_vincite(server_sock);
+
         else if (strcmp(command, "esci") == 0)
             ret = esci(server_sock);
         
@@ -778,6 +782,122 @@ int vedi_estrazione(int sockfd, int argc, char *args[])
 
 usage:
     consolelog("uso: vedi_estrazione <n> <ruota>\n");
+    return 0;
+}
+
+int vedi_vincite(int sockfd)
+{
+    // invio il comando al server
+    char *dummy_args = "";
+    if (send_command(sockfd, "vedi_vincite", 0, &dummy_args) == -1)
+        return 0;
+
+    // ricevo la risposta
+    struct response resp;
+    if (get_response(sockfd, &resp, 0) == -1)
+        return 0;
+    
+    // se il server non da l'ok esco
+    if (resp.code != SRESP_OK)
+    {
+        echo_response(&resp);
+        return 0;
+    }
+
+    // ricevo il messaggio contente le giocate
+    char *msg;
+    int msglen;
+    last_msg_operation = MSGOP_NONE;
+    if ((msglen = recv_msg(sockfd, &msg)) <= 0)
+        return 0;
+    
+    // apro msg come se fosse uno stream
+    FILE *stream = fmemopen(msg, sizeof(char) * msglen, "r");
+
+    // leggo il numero di giocate vincenti
+    long long int bigint;
+    deserializza_int(stream, &bigint);
+    int nvittorie = bigint;
+
+    // array contenente le vincite totali per categoria di scommessa
+    int vincite_totali[N_TIPI_SCOMMESSE];
+    memset(vincite_totali, 0, sizeof(vincite_totali));        
+
+    // stampo tutte le giocate vincenti
+    for (int i = 0; i < nvittorie; i++)
+    {
+        giocata_t giocata;
+        deserializza_giocata(stream, &giocata);
+
+        // aggiungo le vincite di questa giocata al totale delle vincite
+        for (int j = 0; j < N_TIPI_SCOMMESSE; j++)
+        {
+            vincite_totali[j] += giocata.vincita[j];
+        }
+
+        // converto il timestamp in stringa
+        char datebuff[64] = "";
+        strftime(datebuff, 64, "%d/%m/%Y - %H:%M:%S", localtime(&giocata.estrazione.timestamp));
+
+        // stampo la data dell'estrazione
+        printf("\nestrazione del %s\n", datebuff);
+
+        // per ogni ruota selezionata
+        for (int j = 0; j < N_RUOTE; j++)
+        {
+            // se la ruota corrente non è selezionata passo oltre
+            unsigned int mask = 1u << j;
+            if ((giocata.schedina.ruote_selezionate & mask) == 0)
+                continue;
+            
+            // stampo il nome della ruota
+            printf("%12s: ", ruote_str[j]);
+
+            // stampo i numeri indovinati su questa ruota
+            for (int k = 0; k < N_DA_GIOCARE; k++)
+            {
+                for (int l = 0; l < N_DA_ESTRARRE; l++)
+                {
+                    if (giocata.schedina.numeri[k] == giocata.estrazione.ruote[j][l])
+                        printf(" %2d", giocata.schedina.numeri[k]);
+                }
+            }
+
+            printf("\n");
+        }
+
+        // stampo un riepilogo delle vincite di questa giocata
+        for (int k = 0; k < N_TIPI_SCOMMESSE; k++)
+        {
+            // conversione centesimi ad euro
+            float v = ((float) giocata.vincita[k]) / 100.0f;
+
+            printf("%c: %.2f  ", tipi_scommesse_str[k][0] - 32, v);
+        }
+
+        printf("\n**************************************\n");
+    }
+
+    // chiudo lo stream
+    fclose(stream);
+
+    // libero msg
+    free(msg);
+
+    // stampo il totale delle vincite per tipo di scommeessa
+    printf("\nRIEPILOGO VINCITE:\n");
+    for (int i = 0; i < N_TIPI_SCOMMESSE; i++)
+    {
+        // conversione centesimi ad euro
+        float v = ((float) vincite_totali[i]) / 100.0f;
+
+        printf("%12s: %.2f\n", tipi_scommesse_str[i], v);
+    }
+
+    printf("\n");
+
+
+
     return 0;
 }
 
