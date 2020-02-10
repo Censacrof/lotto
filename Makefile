@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -g
+CFLAGS=-Wall -g -std=gnu90
 LINK_CLIENT=
 LINK_SERVER=-lcrypt
 SRC_DIR=./src

@@ -45,13 +45,14 @@ int vedi_giocate(int client_sock, int argc, char *args[])
 
     // conto il numero di schedine richieste e lo scrivo all'inizio del messaggio
     int nrichieste = 0;
-    for (int i = 0; i < utente.n_giocate; i++)
+    int i;
+    for (i = 0; i < utente.n_giocate; i++)
         if (utente.giocate[i].attiva == attive)
             nrichieste++;
     serializza_int(stream, nrichieste, 0);
 
     // inserisco tutte le giocate richieste
-    for (int i = 0; i < utente.n_giocate; i++)
+    for (i = 0; i < utente.n_giocate; i++)
     {
         if (utente.giocate[i].attiva != attive)
             continue;

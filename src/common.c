@@ -302,7 +302,8 @@ int regex_match(const char *regex_txt, const char *str, char **matches[])
         *matches = (char **) malloc(sizeof(char *) * nmatches);
 
         // prendo ogni match e lo copio in una nuova stringa all'interno di matches
-        for (int i = 0; i < nmatches; i++)
+        int i;
+        for (i = 0; i < nmatches; i++)
         {
             char *mbase = (char *) &str[match_offsets[i].rm_so]; // indirizzo del match
             int mlen = match_offsets[i].rm_eo - match_offsets[i].rm_so; // lunghezza del match
@@ -324,7 +325,8 @@ int regex_match(const char *regex_txt, const char *str, char **matches[])
 // libera i buffer allocatin da regex_match puntati da *matches
 void regex_match_free(char **matches[], int nmatches)
 {
-    for (int i = 0; i < nmatches; i++)
+    int i;
+    for (i = 0; i < nmatches; i++)
         free((*matches)[i]);
     free(*matches);
     *matches = NULL;

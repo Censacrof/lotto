@@ -19,10 +19,13 @@ int main(int argc, char *argv[])
 
     printf("%d matches\n", nmatches);
 
-    for (int i = 0; i < nmatches; i++)
+    int i;
+    for (i = 0; i < nmatches; i++)
     {
         printf("match %d: %s\n", i, matches[i]);
     }
 
     regex_match_free(&matches, nmatches);
+
+    return 0;
 }

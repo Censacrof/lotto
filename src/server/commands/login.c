@@ -27,7 +27,8 @@ int login(int client_sock, const char *client_addr_str, int argc, char *args[])
         goto wrongcredentials;
 
     // l'username è case insensitive, quindi lo converto in lowercase per facilitare i confronti
-    for (char *c = args[0]; *c; c++) *c = *c >= 'A' && *c <= 'Z' ? *c + 32 : *c;
+    char *c;
+    for (c = args[0]; *c; c++) *c = *c >= 'A' && *c <= 'Z' ? *c + 32 : *c;
 
     // controllo se l'utente esiste
     if (!utente_exists(args[0]))
@@ -55,7 +56,8 @@ int login(int client_sock, const char *client_addr_str, int argc, char *args[])
 
     // genero sessionid (10 caratteri alphanumerici)
     char charset[] = "abcdefghijklmnopqrstuvwxyz0123456789";
-    for (int i = 0; i < SESSIONID_LEN; i++)
+    int i;
+    for (i = 0; i < SESSIONID_LEN; i++)
     {
         session.id[i] = charset[rand() % (sizeof(charset) - 1)];
     }

@@ -20,7 +20,8 @@ int signup(int client_sock, int nargs, char *args[])
     }
 
     // l'username è case insensitive, quindi lo converto in lowercase per facilitare i confronti
-    for (char *c = args[0]; *c; c++) *c = *c >= 'A' && *c <= 'Z' ? *c + 32 : *c;
+    char *c;
+    for (c = args[0]; *c; c++) *c = *c >= 'A' && *c <= 'Z' ? *c + 32 : *c;
 
     while (1)
     {
@@ -66,7 +67,8 @@ int signup(int client_sock, int nargs, char *args[])
     char salt[PASSWORDSALT_LEN + 1];
     char randomstr[17];
     randomstr[16] = '\0';
-    for (int i = 0; i < 16; i++)
+    int i;
+    for (i = 0; i < 16; i++)
     {
         const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ/.";
         randomstr[i] = charset[rand() % sizeof(charset - 1)];

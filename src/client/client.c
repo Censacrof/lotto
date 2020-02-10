@@ -167,7 +167,8 @@ int main(int shellargc, char *shellargv[])
         // libero le risorse che non servono piu'
         regex_match_free(&matches, nmatches);
         free(command);
-        for (int i = 0; i < nargs; i++)
+        int i;
+        for (i = 0; i < nargs; i++)
             free(args[i]);
         free(args);
 
@@ -205,7 +206,8 @@ int send_command(int sockfd, const char *command, int argc, char *args[])
     fprintf(f, "%s", command);
 
     // argomenti
-    for (int i = 0; i < argc; i++)
+    int i;
+    for (i = 0; i < argc; i++)
         fprintf(f, " %s", args[i]);
     
     // chiudo lo stream
@@ -498,7 +500,8 @@ int invia_giocata(int sockfd, int argc, char *args[])
                     goto wrongparameter;
 
                 // controllo se il numero è già stato inserito nella schedina
-                for (int j = 0; j < got_numeri; j++)
+                int j;
+                for (j = 0; j < got_numeri; j++)
                 {
                     if (schedina.numeri[j] == n)
                     {
@@ -656,7 +659,8 @@ int vedi_giocate(int sockfd, int argc, char *args[])
     deserializza_int(stream, &ndaleggere);
 
     // per ogni schedina ricevuta stampo le informazioni
-    for (int i = 0; i < ndaleggere; i++)
+    int i;
+    for (i = 0; i < ndaleggere; i++)
     {
         schedina_t schedina;
         deserializza_schedina(stream, &schedina);
@@ -664,7 +668,8 @@ int vedi_giocate(int sockfd, int argc, char *args[])
         printf("%d) ", i + 1);
 
         // stampo le ruote selezionate
-        for (int j = 0; j < N_RUOTE; j++)
+        int j;
+        for (j = 0; j < N_RUOTE; j++)
         {
             unsigned int mask = 1u << j;
             if (schedina.ruote_selezionate & mask)
@@ -672,12 +677,12 @@ int vedi_giocate(int sockfd, int argc, char *args[])
         }
 
         // stampo i numeri giocati
-        for (int j = 0; j < N_DA_GIOCARE; j++)
+        for (j = 0; j < N_DA_GIOCARE; j++)
             if (schedina.numeri[j] != 0)
                 printf("%d ", schedina.numeri[j]);
         
         // stampo gli importi per ogni tipo di scommessa
-        for (int j = 0; j < N_TIPI_SCOMMESSE; j++)
+        for (j = 0; j < N_TIPI_SCOMMESSE; j++)
         {
             if (schedina.importi_scommesse[j] != 0)
             {
@@ -725,7 +730,8 @@ int vedi_estrazione(int sockfd, int argc, char *args[])
     {
         // controllo se la ruota specificata è valida
         int trovata = 0;
-        for (int i = 0; i < N_RUOTE; i++)
+        int i;
+        for (i = 0; i < N_RUOTE; i++)
         {
             if (strcmp(args[1], ruote_str[i]) == 0)
             {
@@ -776,7 +782,8 @@ int vedi_estrazione(int sockfd, int argc, char *args[])
     deserializza_int(stream, &ndaleggere);
 
     // per ogni estrazione ricevuta stampo le informazioni
-    for (int i = 0; i < ndaleggere; i++)
+    int i;
+    for (i = 0; i < ndaleggere; i++)
     {
         // se la ruota è specificata
         if (argc == 2)
@@ -791,7 +798,8 @@ int vedi_estrazione(int sockfd, int argc, char *args[])
 
             printf("\n***************************************\n-------- %s --------\n***************************************\n%12s\t", datebuff, ruote_str[indiceruota]);
 
-            for (int j = 0; j < N_DA_ESTRARRE; j++)
+            int j;
+            for (j = 0; j < N_DA_ESTRARRE; j++)
             {
                 deserializza_int(stream, &bigint);
                 printf("  %2d", (int) bigint);
@@ -810,12 +818,14 @@ int vedi_estrazione(int sockfd, int argc, char *args[])
 
             printf("\n***************************************\n-------- %s --------\n***************************************\n", datebuff);
 
-            for (int j = 0; j < N_RUOTE; j++)
+            int j;
+            for (j = 0; j < N_RUOTE; j++)
             {
                 // stampo il nome della ruota
                 printf("%12s\t", ruote_str[j]);
 
-                for (int k = 0; k < N_DA_ESTRARRE; k++)
+                int k;
+                for (k = 0; k < N_DA_ESTRARRE; k++)
                 {
                     printf("%2d  ", estrazione.ruote[j][k]);
                 }
@@ -873,13 +883,15 @@ int vedi_vincite(int sockfd)
     memset(vincite_totali, 0, sizeof(vincite_totali));        
 
     // stampo tutte le giocate vincenti
-    for (int i = 0; i < nvittorie; i++)
+    int i;
+    for (i = 0; i < nvittorie; i++)
     {
         giocata_t giocata;
         deserializza_giocata(stream, &giocata);
 
         // aggiungo le vincite di questa giocata al totale delle vincite
-        for (int j = 0; j < N_TIPI_SCOMMESSE; j++)
+        int j;
+        for (j = 0; j < N_TIPI_SCOMMESSE; j++)
         {
             vincite_totali[j] += giocata.vincita[j];
         }
@@ -892,7 +904,7 @@ int vedi_vincite(int sockfd)
         printf("\nestrazione del %s\n", datebuff);
 
         // per ogni ruota selezionata
-        for (int j = 0; j < N_RUOTE; j++)
+        for (j = 0; j < N_RUOTE; j++)
         {
             // se la ruota corrente non è selezionata passo oltre
             unsigned int mask = 1u << j;
@@ -903,9 +915,11 @@ int vedi_vincite(int sockfd)
             printf("%12s: ", ruote_str[j]);
 
             // stampo i numeri indovinati su questa ruota
-            for (int k = 0; k < N_DA_GIOCARE; k++)
+            int k;
+            for (k = 0; k < N_DA_GIOCARE; k++)
             {
-                for (int l = 0; l < N_DA_ESTRARRE; l++)
+                int l;
+                for (l = 0; l < N_DA_ESTRARRE; l++)
                 {
                     if (giocata.schedina.numeri[k] == giocata.estrazione.ruote[j][l])
                         printf(" %2d", giocata.schedina.numeri[k]);
@@ -916,7 +930,8 @@ int vedi_vincite(int sockfd)
         }
 
         // stampo un riepilogo delle vincite di questa giocata
-        for (int k = 0; k < N_TIPI_SCOMMESSE; k++)
+        int k;
+        for (k = 0; k < N_TIPI_SCOMMESSE; k++)
         {
             // conversione centesimi ad euro
             float v = ((float) giocata.vincita[k]) / 100.0f;
@@ -935,7 +950,7 @@ int vedi_vincite(int sockfd)
 
     // stampo il totale delle vincite per tipo di scommeessa
     printf("\nRIEPILOGO VINCITE:\n");
-    for (int i = 0; i < N_TIPI_SCOMMESSE; i++)
+    for (i = 0; i < N_TIPI_SCOMMESSE; i++)
     {
         // conversione centesimi ad euro
         float v = ((float) vincite_totali[i]) / 100.0f;

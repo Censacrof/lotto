@@ -117,7 +117,8 @@ int importo_valido(const char *importostr, int *importo)
 
     // controllo n è nella lista degli importi possibili
     int valid = 0;
-    for (int i = 0; i < sizeof(importi_possibili) / sizeof(importi_possibili[0]); i++)
+    int i;
+    for (i = 0; i < sizeof(importi_possibili) / sizeof(importi_possibili[0]); i++)
         if (n == importi_possibili[i])
         {
             valid = 1;
@@ -153,7 +154,9 @@ int ruota_valida(const char *ruotastr, unsigned int *ruotamask)
 
     // altrimenti controllo se la ruota specificata e' nella lista delle ruote valide
     else 
-        for (int i = 0; i < N_RUOTE; i++)
+    {
+        int i;
+        for (i = 0; i < N_RUOTE; i++)
             if (strcmp(ruotastr, ruote_str[i]) == 0)
             {
                 valid = 1;
@@ -161,6 +164,8 @@ int ruota_valida(const char *ruotastr, unsigned int *ruotamask)
                     *ruotamask = TOMASK(i);
                 break;
             }
+    }
+        
     
     if (!valid)
         return 0;
@@ -461,7 +466,8 @@ int salva_giocata(const char *username, const schedina_t *schedina)
 
 int serializza_giocata(FILE *stream, const giocata_t *giocata)
 {
-    for (int i = 0; i < N_TIPI_SCOMMESSE; i++)
+    int i;
+    for (i = 0; i < N_TIPI_SCOMMESSE; i++)
     {
         serializza_int(stream, giocata->vincita[i], 1);
     }
@@ -480,7 +486,8 @@ int deserializza_giocata(FILE *stream, giocata_t *giocata)
 {
     long long bigint;
 
-    for (int i = 0; i < N_TIPI_SCOMMESSE; i++)
+    int i;
+    for (i = 0; i < N_TIPI_SCOMMESSE; i++)
     {
         deserializza_int(stream, &bigint);
         giocata->vincita[i] = bigint;
@@ -595,7 +602,8 @@ int is_blacklisted(const char *ip, time_t *timeleft)
 
     // riscrivo il file omettendo i ban terminati
     f = fopen(PATH_BLACKLIST, "w");
-    for (int i = 0; i < n_entries; i++)
+    int i;
+    for (i = 0; i < n_entries; i++)
     {
         serializza_str(f, blacklist_entries[i].addr, 1);
         serializza_int(f, blacklist_entries[i].timestamp, 0);

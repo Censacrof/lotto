@@ -35,7 +35,8 @@ int vedi_estrazione(int client_sock, int argc, char *args[])
     {
         // controllo se la ruota specificata è valida
         int trovata = 0;
-        for (int i = 0; i < N_RUOTE; i++)
+        int i;
+        for (i = 0; i < N_RUOTE; i++)
         {
             if (strcmp(args[1], ruote_str[i]) == 0)
             {
@@ -88,7 +89,8 @@ int vedi_estrazione(int client_sock, int argc, char *args[])
     
     // inserisco nel messaggio le utilme min(nlette, n) estrazioni al client in ordine decrescente di data
     // (si assume che il file delle estrazioni sia ordinato)
-    for (int i = 0; i < to_send; i++)
+    int i;
+    for (i = 0; i < to_send; i++)
     {
         testa--;
         if (testa < 0)
@@ -101,7 +103,8 @@ int vedi_estrazione(int client_sock, int argc, char *args[])
             serializza_int(stream, estrazioni[testa].timestamp, 0);
             
             // scrivo i numeri estratti
-            for (int j = 0; j < N_DA_ESTRARRE; j++)
+            int j;
+            for (j = 0; j < N_DA_ESTRARRE; j++)
                 serializza_int(stream, estrazioni[testa].ruote[indiceruota][j], 0);
         }
 

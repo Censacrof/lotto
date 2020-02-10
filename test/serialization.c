@@ -101,9 +101,10 @@ int main(int argc, char *argv[])
 
     schedina_t schedina;
     memset(&schedina, 0, sizeof(schedina_t));
-    for (int i = 0; i < N_DA_GIOCARE; i++)
+    int i;
+    for (i = 0; i < N_DA_GIOCARE; i++)
         schedina.numeri[i] = (i + 1) * 5;
-    for (int i = 0; i < N_TIPI_SCOMMESSE; i++)
+    for (i = 0; i < N_TIPI_SCOMMESSE; i++)
         schedina.importi_scommesse[i] = i + 1;
     schedina.ruote_selezionate = TOMASK(iBARI) | TOMASK(iCAGLIARI) | TOMASK(iFIRENZE);
     testschedina(&schedina);
@@ -112,9 +113,12 @@ int main(int argc, char *argv[])
     estrazione_t estrazione;
     memset(&estrazione, 0, sizeof(estrazione_t));
     estrazione.timestamp = time(NULL);
-    for (int i = 0; i < N_RUOTE; i++)
-        for (int j = 0; j < N_DA_ESTRARRE; j++)
+    for (i = 0; i < N_RUOTE; i++)
+    {
+        int j;
+        for (j = 0; j < N_DA_ESTRARRE; j++)
             estrazione.ruote[i][j] = rand() % 90;
+    }        
     testestrazione(&estrazione);
     
     printf("-------------------------------------------\n");
@@ -124,21 +128,25 @@ int main(int argc, char *argv[])
     strcpy(utente.passwordhash, "bAmBaGiA");
     utente.n_giocate = 5;
     utente.giocate = calloc(sizeof(*utente.giocate) * utente.n_giocate, 1);
-    for (int i = 0; i < utente.n_giocate; i++)
+    for (i = 0; i < utente.n_giocate; i++)
     {
-        for (int j = 0; j < N_TIPI_SCOMMESSE; j++)
+        int j;
+        for (j = 0; j < N_TIPI_SCOMMESSE; j++)
             utente.giocate[i].vincita[j] = rand() % 1000;
 
-        for (int j = 0; j < N_DA_GIOCARE; j++)
+        for (j = 0; j < N_DA_GIOCARE; j++)
             utente.giocate[i].schedina.numeri[j] = rand() % 90;
-        for (int j = 0; j < N_TIPI_SCOMMESSE; j++)
+        for (j = 0; j < N_TIPI_SCOMMESSE; j++)
             utente.giocate[i].schedina.importi_scommesse[j] = j + 1;
         utente.giocate[i].schedina.ruote_selezionate = TOMASK(iBARI) | TOMASK(iCAGLIARI) | TOMASK(iFIRENZE);
 
         utente.giocate[i].estrazione.timestamp = time(NULL);
-        for (int j = 0; j < N_RUOTE; j++)
-            for (int k = 0; k < N_DA_ESTRARRE; k++)
+        for (j = 0; j < N_RUOTE; j++)
+        {
+            int k;
+            for (k = 0; k < N_DA_ESTRARRE; k++)
                 utente.giocate[i].estrazione.ruote[j][k] = rand() % 90;
+        }            
     }
     testutente(&utente);
 

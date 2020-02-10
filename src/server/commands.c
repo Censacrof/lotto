@@ -62,7 +62,8 @@ int execute_command(int client_sock, char *msg, const char *client_addr_str)
     // stampo il comando che il client sta tentando di eseguire
     char strbuff[50];
     int written = sprintf(strbuff, "!%s", command);
-    for (int i = 0; i < nargs; i++)
+    int i;
+    for (i = 0; i < nargs; i++)
         written += sprintf(
             strbuff + written,
             " %s",
@@ -127,7 +128,7 @@ int execute_command(int client_sock, char *msg, const char *client_addr_str)
     // libero le risorse che non servono piu'
     regex_match_free(&matches, nmatches);
     free(command);
-    for (int i = 0; i < nargs; i++)
+    for (i = 0; i < nargs; i++)
         free(args[i]);
     free(args);    
     

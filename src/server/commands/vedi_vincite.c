@@ -25,14 +25,16 @@ int vedi_vincite(int client_sock)
     int nvittorie = 0;
     giocata_t **giocate_vincenti = malloc(sizeof(giocata_t *) * utente.n_giocate);
 
-    for (int i = 0; i < utente.n_giocate; i++)
+    int i;
+    for (i = 0; i < utente.n_giocate; i++)
     {
         // se la giocata è ancora attiva passo oltre
         if (utente.giocate[i].attiva == 1)
             continue;
 
         // controllo se la giocata è vincente
-        for (int j = 0; j < N_TIPI_SCOMMESSE; j++)
+        int j;
+        for (j = 0; j < N_TIPI_SCOMMESSE; j++)
         {
             if (utente.giocate[i].vincita[j] > 0)
             {
@@ -52,7 +54,7 @@ int vedi_vincite(int client_sock)
     serializza_int(stream, nvittorie, 0);
 
     // scrivo le giocate vincenti
-    for (int i = 0; i < nvittorie; i++)
+    for (i = 0; i < nvittorie; i++)
     {
         serializza_giocata(stream, giocate_vincenti[i]);
     }

@@ -32,12 +32,14 @@ void estrattore(const time_t period)
         estrazione.timestamp = time(NULL);
 
         // srand(0); // DEBUG
-        for (int i = 0; i < N_RUOTE; i++)
+        int i;
+        for (i = 0; i < N_RUOTE; i++)
         {
             // creo un alias per la ruota corrente
             int *estratti = estrazione.ruote[i];
 
-            for (int j = 0; j < N_DA_ESTRARRE; j++)
+            int j;
+            for (j = 0; j < N_DA_ESTRARRE; j++)
             {
                 // estraggo un numero tra 1 e 90 che non sia già stato estratto
                 int n;
@@ -46,7 +48,8 @@ void estrattore(const time_t period)
                     n = 1 + (rand() % 90);
 
                     // controllo se il numero è già stato estratto su questa ruota
-                    for (int k = 0; k < j; k++)
+                    int k;
+                    for (k = 0; k < j; k++)
                         if (n == estratti[k])
                             continue;
                     break;
@@ -110,7 +113,8 @@ void estrattore(const time_t period)
 void aggiorna_giocate(utente_t *utente, estrazione_t *estrazione)
 {
     // scorro tutte le giocate dell'utente
-    for (int i = 0; i < utente->n_giocate; i++)
+    int i;
+    for (i = 0; i < utente->n_giocate; i++)
     {
         // se la giocata non è attiva passo oltre
         if (utente->giocate[i].attiva == 0)
@@ -124,14 +128,15 @@ void aggiorna_giocate(utente_t *utente, estrazione_t *estrazione)
 
         // ricavo quanti numeri sono stati giocati nella schedina
         int n_numeri_giocati = 0;
-        for (int j = 0; j < N_DA_GIOCARE; j++)
+        int j;
+        for (j = 0; j < N_DA_GIOCARE; j++)
             if (utente->giocate[i].schedina.numeri[j] != 0)
                 n_numeri_giocati++;
 
         // ricavo quante sono le ruote della giocata e per ognuna di queste ruote quanti numeri sono stati indovinati
         int n_numeri_indovinati[N_RUOTE];
         int n_ruote_selezionate = 0;
-        for (int j = 0; j < N_RUOTE; j++)
+        for (j = 0; j < N_RUOTE; j++)
         {
             // se la ruota j non è stata selezionata passo oltre
             int mask = 1u << j;
@@ -140,12 +145,14 @@ void aggiorna_giocate(utente_t *utente, estrazione_t *estrazione)
 
             // conto i numeri indovinati sulla ruota j
             n_numeri_indovinati[n_ruote_selezionate] = 0;            
-            for (int k = 0; k < N_DA_GIOCARE; k++)
+            int k;
+            for (k = 0; k < N_DA_GIOCARE; k++)
             {
                 if (utente->giocate[i].schedina.numeri[k] == 0)
                     continue;                        
 
-                for (int l = 0; l < N_DA_ESTRARRE; l++)
+                int l;
+                for (l = 0; l < N_DA_ESTRARRE; l++)
                     if (utente->giocate[i].schedina.numeri[k] == estrazione->ruote[j][l])
                         n_numeri_indovinati[n_ruote_selezionate]++;
             }
@@ -155,7 +162,7 @@ void aggiorna_giocate(utente_t *utente, estrazione_t *estrazione)
         }
 
         // per ogni tipo di scommessa calcolo la vincita
-        for (int j = 0; j < N_TIPI_SCOMMESSE; j++)
+        for (j = 0; j < N_TIPI_SCOMMESSE; j++)
         {
             // alias
             int *vincita = utente->giocate[i].vincita;
@@ -171,7 +178,8 @@ void aggiorna_giocate(utente_t *utente, estrazione_t *estrazione)
             const double vincite_lorde[N_TIPI_SCOMMESSE] = { 11.23, 250.00, 4500.00, 120000.00, 6000000.00 };
 
             // sommo la vincita relativa ad ogni ruota selezionata k per questo tipo di scommessa j
-            for (int k = 0; k < n_ruote_selezionate; k++)
+            int k;
+            for (k = 0; k < n_ruote_selezionate; k++)
             {
                 // se il numero di numeri indovinati su questa ruota è minore dei numeri richiesti da indovinare per questo tipo di scommessa
                 if (n_numeri_indovinati[k] <= j)
@@ -200,9 +208,13 @@ unsigned int binomialcoeff(unsigned int n, unsigned int k)
     // se la cache non è inizializzata la inizializzo
     if (!binomialcache_initialized)
     {
-        for (int i = 1; i < BINOMIALCACHE_SIZE; i++)
-            for (int j = 1; j < i; j++)
+        int i;
+        for (i = 1; i < BINOMIALCACHE_SIZE; i++)
+        {
+            int j;
+            for (j = 1; j < i; j++)
                 binomialcache[i][j] = 0;
+        }
 
         binomialcache_initialized = 1;
     }
