@@ -489,7 +489,7 @@ int invia_giocata(int sockfd, int argc, char *args[])
                 if (got_numeri >= N_DA_GIOCARE)
                 {
                     consolelog("numero di numeri da giocare superato");
-                    goto usage;
+                    return 0;
                 }
 
                 // controllo se l'argomento è un numero da giocare valido
@@ -503,7 +503,7 @@ int invia_giocata(int sockfd, int argc, char *args[])
                     if (schedina.numeri[j] == n)
                     {
                         consolelog("il numero %d è stato inserito più volte nella schedina\n", n);
-                        goto usage;
+                        return 0;
                     }
                 }
                 
@@ -519,7 +519,7 @@ int invia_giocata(int sockfd, int argc, char *args[])
                 if (got_importi >= N_DA_GIOCARE)
                 {
                     consolelog("il numero di numeri supera il numero di tipi di scomesse (estratto, ambo, ..., cinquina)");
-                    goto usage;
+                    return 0;
                 }
 
                 // controllo se l'argomento è un importo valido
@@ -542,7 +542,7 @@ int invia_giocata(int sockfd, int argc, char *args[])
     if (got_ruote == 0 || got_numeri == 0 || got_importi == 0)
     {
         consolelog("parametri mancanti\n");
-        goto usage;
+        return 0;
     }
 
     // invio il comando al server
@@ -605,10 +605,6 @@ int invia_giocata(int sockfd, int argc, char *args[])
 
 wrongparameter:
     consolelog("errore argomento %d: previsto \"%s\", trovato \"%s\"\n", i + 1, expected_str[state], arg);
-    goto usage;
-
-usage:
-    consolelog("uso: invia_giocata -r <ruota1 ... ruotaN> -n <num1 ... numN> -i <importoEstratto importoAmbo ... importoCinquina>\n");
     return 0;
 }
 
@@ -617,13 +613,13 @@ int vedi_giocate(int sockfd, int argc, char *args[])
     if (argc != 1)
     {
         consolelog("numero di parametri errato\n");
-        goto usage;
+        return 0;
     }
 
     if (strcmp(args[0], "0") != 0 && strcmp(args[0], "1") != 0)
     {
         consolelog("tipo errato (0 = non attive, 1 = attive)\n");
-        goto usage;
+        return 0;
     }
 
     // invio il comando al server
@@ -699,10 +695,6 @@ int vedi_giocate(int sockfd, int argc, char *args[])
     free(msg);
 
     return 0;
-
-usage:
-    consolelog("uso: vedi_giocate <tipo>\n");
-    return 0;
 }
 
 int vedi_estrazione(int sockfd, int argc, char *args[])
@@ -710,7 +702,7 @@ int vedi_estrazione(int sockfd, int argc, char *args[])
     if (argc != 1 && argc != 2)
     {
         consolelog("numero di parametri errato\n");
-        goto usage;
+        return 0;
     }
 
     // controllo n
@@ -719,7 +711,7 @@ int vedi_estrazione(int sockfd, int argc, char *args[])
     {
     nonvalidn:
         consolelog("n deve essere un numero positivo tra 1 e 20\n");
-        goto usage;
+        return 0;
     }
 
     // estraggo n
@@ -746,7 +738,7 @@ int vedi_estrazione(int sockfd, int argc, char *args[])
         if (!trovata)
         {
             consolelog("la ruota specificata non è valida\n");
-            goto usage;
+            return 0;
         }
     }
 
@@ -839,10 +831,6 @@ int vedi_estrazione(int sockfd, int argc, char *args[])
     fclose(stream);
     free(msg);
 
-    return 0;
-
-usage:
-    consolelog("uso: vedi_estrazione <n> <ruota>\n");
     return 0;
 }
 
