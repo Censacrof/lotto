@@ -81,6 +81,9 @@ int execute_command(int client_sock, char *msg, const char *client_addr_str)
 
     else if (strcmp(command, "login") == 0)
         ret = login(client_sock, client_addr_str, nargs, args);
+    
+    else if (strcmp(command, "esci") == 0)
+        ret = esci(client_sock);
 
     // controllo il sessionid
     else if (strcmp(session_id, session.id) != 0 || strlen(session_id) != SESSIONID_LEN)
@@ -105,9 +108,6 @@ int execute_command(int client_sock, char *msg, const char *client_addr_str)
 
     else if (strcmp(command, "vedi_vincite") == 0)
         ret = vedi_vincite(client_sock);
-
-    else if (strcmp(command, "esci") == 0)
-        ret = esci(client_sock);
 
     // comando sconosciuto
     else

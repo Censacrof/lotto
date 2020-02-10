@@ -8,9 +8,16 @@
 // !esci
 int esci(int client_sock)
 {
-    session.username[0] = '\0';
-    session.id[0] = '\0';
+    int was_logged = session.username[0] != '\0';
 
-    send_response(client_sock, SRESP_CLOSE, "logout eseguito");
+    if (was_logged)
+    {
+        session.username[0] = '\0';
+        session.id[0] = '\0';
+        send_response(client_sock, SRESP_CLOSE, "logout eseguito. arrivederci");
+    }
+    else
+        send_response(client_sock, SRESP_CLOSE, "arrivederci");
+
     return -1;
 }
