@@ -25,6 +25,7 @@ void echo_response(const struct response *resp)
 int send_command(int sockfd, const char *command, int argc, char *args[]);
 int get_response(int sockfd, struct response *resp, int echo);
 
+int help(int argc, char *args[]);
 int signup(int sockfd, int argc, char *args[]);
 int login(int sockfd, int argc, char *args[]);
 int invia_giocata(int sockfd, int argc, char *args[]);
@@ -135,7 +136,10 @@ int main(int shellargc, char *shellargv[])
         int ret;
         
         // eseguo il comando corrispondente
-        if (strcmp(command, "signup") == 0)
+        if (strcmp(command, "help") == 0)
+            ret = help(nargs, args);
+
+        else if (strcmp(command, "signup") == 0)
             ret = signup(server_sock, nargs, args);
         
         else if (strcmp(command, "login") == 0)
@@ -267,6 +271,63 @@ end:
 
 
 // ----------------------------- comandi -----------------------------
+int help(int argc, char *args[])
+{
+    if (argc != 0 && argc != 1)
+    {
+        printf("uso: !help [comando]\n");
+        return 0;
+    }
+
+    // se non è specificato il comando mostro la lista di tutti i comandi
+    if (argc == 0)
+    {
+        printf(
+"\
+\ncomandi disponibili:\n\
+    !help [comando]\n\
+    !signup <username> <password>\n\
+    !login <username> <password>\n\
+    !invia_giocata <schedina>\n\
+    !vedi_giocate <tipo>\n\
+    !vedi_estrazione <n> [ruota]\n\
+    !vedi_vincite\n\
+    !esci\n\
+"
+        );
+
+        return 0;
+    }
+
+    // il comando è specificato
+    if (strcmp(args[0], "help") == 0)
+        printf("\n!help [comando]\nmostra le istruzioni di comando se specificato altrimenti la lista di tutti i comandi\n");
+    
+    else if (strcmp(args[0], "signup") == 0)
+        printf("\n!signup <username> <password>\ncrea un utente con username e password specificati\n");
+    
+    else if (strcmp(args[0], "login") == 0)
+        printf("\n!login <username> <password>\ntenta di autenticare l'utente specificato con la password fornita\n");
+    
+    else if (strcmp(args[0], "invia_giocata") == 0)
+        printf("\n!invia_giocata -r <ruota1 ... ruotaN> -n <num1 ... numN> -i <importoEstratto importoAmbo ... importoCinquina>\ninvia una giocata al server\n");
+
+    else if (strcmp(args[0], "vedi_giocate") == 0)
+        printf("\n!vedi_giocate <tipo>\nmostra le giocate effettuate. (tipo = 0: attive; tipo = 1: non attive)\n");
+
+    else if (strcmp(args[0], "vedi_estrazione") == 0)
+        printf("\n!vedi_estrazione <n> [ruota]\nmostra le ultime n estrazioni della ruota fornita. se la ruota non è specificata mostra le estrazioni relative a tutte le ruote\n");
+
+    else if (strcmp(args[0], "vedi_vincite") == 0)
+        printf("\n!vedi_vincite\nmostra tutte le vincite\n");
+
+    else if (strcmp(args[0], "esci") == 0)
+        printf("\n!esci\ntermina la sessione e/o chiude la connessione\n");
+
+    return 0;
+}
+
+
 int signup(int sockfd, int argc, char *args[])
 {
     if (argc != 2)
