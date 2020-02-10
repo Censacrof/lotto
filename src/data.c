@@ -333,15 +333,7 @@ int serializza_utente(FILE *stream, const utente_t *utente)
     int i;
     for (i = 0; i < utente->n_giocate; i++)
     {
-        int j;
-        for (j = 0; j < N_TIPI_SCOMMESSE; j++)
-            serializza_int(stream,  utente->giocate[i].vincita[j], 1);
-        fprintf(stream, "\n");
-
-        serializza_int(stream,  utente->giocate[i].attiva, 0);
-
-        serializza_schedina(stream, &utente->giocate[i].schedina);
-        serializza_estrazione(stream, &utente->giocate[i].estrazione);
+        serializza_giocata(stream, &utente->giocate[i]);
     }
 
     return 0;
@@ -371,18 +363,7 @@ int deserializza_utente(FILE *stream, utente_t *utente)
     int i;
     for (i = 0; i < utente->n_giocate; i++)
     {
-        int j;
-        for (j = 0; j < N_TIPI_SCOMMESSE; j++)
-        {
-            deserializza_int(stream, &bigint);
-            utente->giocate[i].vincita[j] = bigint;
-        }
-
-        deserializza_int(stream, &bigint);
-        utente->giocate[i].attiva = bigint;
-
-        deserializza_schedina(stream, &utente->giocate[i].schedina);
-        deserializza_estrazione(stream, &utente->giocate[i].estrazione);
+        deserializza_giocata(stream, &utente->giocate[i]);
     }
 
     return 0;
@@ -474,6 +455,42 @@ int salva_giocata(const char *username, const schedina_t *schedina)
     // salvo l'utente
     if (salva_utente(&utente) == -1)
         return -1;
+
+    return 0;
+}
+
+int serializza_giocata(FILE *stream, const giocata_t *giocata)
+{
+    for (int i = 0; i < N_TIPI_SCOMMESSE; i++)
+    {
+        serializza_int(stream, giocata->vincita[i], 1);
+    }
+        
+    fprintf(stream, "\n");
+
+    serializza_int(stream, giocata->attiva, 0);
+
+    serializza_schedina(stream, &giocata->schedina);
+    serializza_estrazione(stream, &giocata->estrazione);
+
+    return 0;
+}
+
+int deserializza_giocata(FILE *stream, giocata_t *giocata)
+{
+    long long bigint;
+
+    for (int i = 0; i < N_TIPI_SCOMMESSE; i++)
+    {
+        deserializza_int(stream, &bigint);
+        giocata->vincita[i] = bigint;
+    }
+
+    deserializza_int(stream, &bigint);
+    giocata->attiva = bigint;
+
+    deserializza_schedina(stream, &giocata->schedina);
+    deserializza_estrazione(stream, &giocata->estrazione);
 
     return 0;
 }
