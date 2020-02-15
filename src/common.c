@@ -12,7 +12,7 @@
 
 #include "common.h"
 
-
+// array di stringe costante che associa ad ogni codice di risposta del server una stringa leggibile
 const char server_response_str[SRESP_NUM][16] = {
     [SRESP_OK] = "OK",
     [SRESP_RETRY] = "RETRY",
@@ -22,8 +22,10 @@ const char server_response_str[SRESP_NUM][16] = {
     [SRESP_CLOSE] = "CLOSE"
 };
 
-
+// stringa globale utilizzata per identificare il processo che scrive (tramite die o consolelog) su stdout
 char whoiam[70] = "";
+
+// scrive msg seguito dal messaggio di errore corrispondente al valore di errno e termina il processo
 void die(const char *msg)
 {
     char buff[256];
@@ -37,6 +39,7 @@ void die(const char *msg)
     exit(EXIT_FAILURE);
 }
 
+// come printf ma stampa anche il valore della variabile whoami
 void consolelog(const char *format, ...)
 {
     va_list args;
@@ -48,63 +51,9 @@ void consolelog(const char *format, ...)
     va_end(args);
 }
 
-
-// estrae indirizzo e porta dalla struttura sockaddr e lo converte in stringa null-terminated
-// bisogna ricordarsi di deallocare la stringa con free quando non serve più
-// restituisce NULL in caso di errore
-// es: 127.0.0.1:12345
-char *sockaddr_to_string(struct sockaddr *sa)
-{
-    char *s = NULL;
-    switch (sa->sa_family)
-    {
-        case AF_INET:
-        {
-            s = (char *) malloc(sizeof(char) * INET_ADDRSTRLEN + 7); // + 7 perchè: la porta massima è 65535, un carattere è ':', la stringa è null terminated
-            if (!inet_ntop(
-                AF_INET,
-                &(((struct sockaddr_in *) sa)->sin_addr),
-                s,
-                INET_ADDRSTRLEN
-            ))
-                return NULL;
-
-            int port = ntohs(((struct sockaddr_in *) sa)->sin_port); // endianness
-            sprintf(&s[strlen(s)], ":%d", port);
-            break;
-        }
-    
-        case AF_INET6:
-        {
-            s = (char *) malloc(sizeof(char) * INET6_ADDRSTRLEN + 7); // + 7 perchè: la porta massima è 65535, un carattere è ':', la stringa è null terminated
-            if (!inet_ntop(
-                AF_INET6,
-                &(((struct sockaddr_in6 *) sa)->sin6_addr),
-                s,
-                INET6_ADDRSTRLEN
-            ))
-                return NULL;
-
-            int port = ntohs(((struct sockaddr_in6 *) sa)->sin6_port); // endianness
-            sprintf(&s[strlen(s)], ":%d", port);
-            break;
-        }
-
-        default:
-        {
-            errno = EINVAL; // invalid argument
-            return NULL;
-        }
-    }
-
-    return s;
-}
-
-
 // variabile usata per garantire che le funzioni recv_msg e send_msg 
 // vengano chiamate in modo alternato (serve ad evitare bug)
 enum msg_operation last_msg_operation;
-
 
 // riceve un messaggio dal socket sockfd e lo copia su una stringa null terminated 
 // allocata dinamicamente di dimensioni opportune.
@@ -322,7 +271,7 @@ int regex_match(const char *regex_txt, const char *str, char **matches[])
     return nmatches;
 }
 
-// libera i buffer allocatin da regex_match puntati da *matches
+// libera i buffer allocati da regex_match puntati da *matches
 void regex_match_free(char **matches[], int nmatches)
 {
     int i;

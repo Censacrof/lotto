@@ -35,8 +35,6 @@ extern char whoiam[70];
 void die(const char *msg);
 void consolelog(const char *format, ...);
 
-char *sockaddr_to_string(struct sockaddr *sa);
-
 
 enum msg_operation {
     MSGOP_NONE,
