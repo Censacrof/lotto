@@ -35,7 +35,12 @@ int invia_giocata(int client_sock)
     }
 
     // effettuo la deserializzazione della schedina
-    deserializza_schedina(stream, &schedina);
+    if (deserializza_schedina(stream, &schedina) == -1)
+    {
+        send_response(client_sock, SRESP_ERR, "la schedina non è valida");
+        ret = 0;
+        goto end;
+    }
 
     // salvo la giocata
     if (salva_giocata(session.username, &schedina) == -1)

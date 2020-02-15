@@ -270,9 +270,30 @@ int deserializza_schedina(FILE *stream, schedina_t *schedina)
 {
     long long int bigint;
     int i;
+    int got_numbers = 0;
+    int numbers[N_DA_GIOCARE];
     for (i = 0; i < N_DA_GIOCARE; i++)
     {
         deserializza_int(stream, &bigint);
+        
+        // controllo che i numeri giocati siano nell'intervallo [1, 90]
+        if ((bigint < 1 || bigint > 90) && bigint != 0)
+            return -1;
+        
+        // controllo che non venga giocato 2 volte lo stesso numero nella stessa schedina
+        if (bigint != 0)
+        {
+            int j;
+            for (j = 0; j < got_numbers; j++)
+            {
+                if (bigint == numbers[j])
+                    return -1;
+            }
+
+            numbers[got_numbers] = bigint;
+            got_numbers++;
+        }
+
         schedina->numeri[i] = bigint;
     }        
     
