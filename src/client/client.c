@@ -343,31 +343,37 @@ int signup(int sockfd, int argc, char *args[])
         return 0;
     }
 
+    // invio il comando al server
     if (send_command(sockfd, "signup", argc, args) <= 0)
         return -1;
 
     struct response resp;
     while (1)
     {
-        // attendo la risposta dal server
+        // ottengo la risposta dal server
         if (get_response(sockfd, &resp, 1) == -1)
             return -1;
         
         switch (resp.code)
         {
+            // se l'username è già in uso
             case SRESP_RETRY:
             {
+                // ne chiedo un altro all'utente
                 consolelog("\tusername: ");
                 char username[USERNAME_LEN + 1];
                 fgets(username, USERNAME_LEN, stdin);
                 
+                // e lo invio al server
                 send_msg(sockfd, username);
                 continue;
-            }                
+            }
             
+            // se la registrazione è andata a buon fine
             case SRESP_OK:
                 return 0;
         
+            // c'è stato un problema
             default:
                 return -1;
         }
@@ -384,26 +390,35 @@ int login(int sockfd, int argc, char *args[])
         return 0;
     }
 
+    // invio il comando
     if (send_command(sockfd, "login", argc, args) <= 0)
         return -1;
     
+    // ottengo la risposta dal server
     struct response resp;
     if (get_response(sockfd, &resp, 0) <= 0)
         return -1;
     
+    // se è andato tutto bene estraggo il session id
     if (resp.code == SRESP_OK && strlen(resp.info) == SESSIONID_LEN)
     {
         strcpy(sessionid, resp.info);
         consolelog("login effettuato con successo\n");
     }
+
+    // se il server ha chiuso la connessione esco (inserimento in blacklist)
     else if (resp.code == SRESP_CLOSE)
     {
         consolelog("il server ha chiuso la connessione\n");
         return -1;
     }
+
+    // c'è stato un problema
     else
     {
         consolelog("impossibile effettuare login\n");
+
+        // mostro la risposta del server
         echo_response(&resp);
     }    
 
