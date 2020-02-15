@@ -94,6 +94,8 @@ int main(int shellargc, char *shellargv[])
         exit(EXIT_SUCCESS);
     }
 
+    consolelog("digitare !help per vedere la lista dei comandi\n");
+
     // main loop
     while (1)
     {
@@ -325,6 +327,9 @@ int help(int argc, char *args[])
 
     else if (strcmp(args[0], "esci") == 0)
         printf("\n!esci\ntermina la sessione e/o chiude la connessione\n");
+    
+    else
+        printf("comando \"%s\" sconosciuto\n", args[0]);
 
     return 0;
 }
