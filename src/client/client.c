@@ -756,7 +756,7 @@ int vedi_estrazione(int sockfd, int argc, char *args[])
             if (strcmp(args[1], ruote_str[i]) == 0)
             {
                 trovata = 1;
-                indiceruota = 0;
+                indiceruota = i;
                 break;
             }
         }
