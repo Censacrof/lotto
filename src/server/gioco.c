@@ -42,18 +42,25 @@ void estrattore(const time_t period)
             for (j = 0; j < N_DA_ESTRARRE; j++)
             {
                 // estraggo un numero tra 1 e 90 che non sia già stato estratto
+                int gia_estratto;
                 int n;
-                while(1)
+                do
                 {
                     n = 1 + (rand() % 90);
+                    gia_estratto = 0;
 
                     // controllo se il numero è già stato estratto su questa ruota
                     int k;
                     for (k = 0; k < j; k++)
+                    {
                         if (n == estratti[k])
-                            continue;
-                    break;
-                }
+                        {
+                            gia_estratto = 1;
+                            break;
+                        }
+                    }
+                } while (gia_estratto);
+                
 
                 // aggiungo il numero all'estrazione
                 estratti[j] = n;
