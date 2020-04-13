@@ -68,7 +68,7 @@ void estrattore(const time_t period)
         DIR *dir = opendir(PATH_UTENTI);
         if (!dir)
         {
-            consolelog("impossibile aprire la cartella \"%s\". l'estrazione è stata annullata\n");
+            consolelog("impossibile aprire la cartella \"%s\". l'estrazione è stata annullata\n", PATH_UTENTI);
             continue;
         }
 
